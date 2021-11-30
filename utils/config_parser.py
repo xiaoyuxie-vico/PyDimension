@@ -39,16 +39,12 @@ class ConfigParser():
         self.model_name = config['model_name']
         self.random_split_num = config['random_split_num']
         self.dimless_num = config['dimless_num']
-        self.points_num = config['plot_info']['points_num']
         self.input_labels = config['input_labels']
         self.output_labels = config['output_labels']    
         self.tag = self.output_labels[0]
         self.is_normlize_output = config['is_normlize_output']
         self.is_loglize_output = config['is_loglize_output']
         self.is_loglize_input = config['is_loglize_input']
-        self.points_num = config['plot_info']['points_num']
-        self.xlabel = config['plot_info']['xlabel']
-        self.ylabel = config['plot_info']['ylabel']
         self.base_vec_num = 0
         
         

@@ -28,28 +28,15 @@ fix_dnn_mat: True
 split_seed: 1
 dnn_mat_file: None
 
-# rb: adam, lr 0.03, batch size 32
 params:
-  # mse loss
   epoch_num: 100
-  # stepwise: 50
-  # lr_initial: 0.01
   lr_initial: 0.01
   display_num: 5
-  # batch_size: 8
   batch_size: 1
   pretrained_path: 'random'
-  # pretrained_path: 'models/oscillation_torch1.4.pkl'
 
 metric_list:
   - 'mean_absolute_error'
   - 'mean_relative_error' 
   - 'mean_squared_error'
   - 'r2_score'
-  # - 'median_absolute_error'
-  # - 'explained_variance_score'
-
-plot_info:
-  points_num: 100
-  xlabel: 'Exp. data for lg$(q)$'
-  ylabel: 'DimNet prediction'
