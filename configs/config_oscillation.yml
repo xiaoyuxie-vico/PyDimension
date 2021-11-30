@@ -1,0 +1,55 @@
+model_name: 'DimensionNet'
+problem_type: 'oscillation'
+dimless_num: 1
+dnn_mat_num: 1
+hidden_num: 10
+degree: 2
+
+# dataset
+# random_split_num: 20000
+random_split_num: 1
+dataset_file: './dataset/dataset_oscillation.csv'
+input_labels:
+  - 'A0'
+  - 't'
+  - 'm'
+  - 'k'
+  - 'c'
+output_labels:
+  - 'x'
+output_index: 0
+is_normlize_output: False
+is_loglize_output: False
+is_loglize_input: True 
+reverse_input: True
+reverse_output: True
+fix_scaling_mat: True
+fix_dnn_mat: True
+split_seed: 1
+dnn_mat_file: None
+
+# rb: adam, lr 0.03, batch size 32
+params:
+  # mse loss
+  epoch_num: 100
+  # stepwise: 50
+  # lr_initial: 0.01
+  lr_initial: 0.01
+  display_num: 5
+  # batch_size: 8
+  batch_size: 1
+  pretrained_path: 'random'
+  # pretrained_path: 'models/oscillation_torch1.4.pkl'
+
+metric_list:
+  - 'mean_absolute_error'
+  - 'mean_relative_error' 
+  - 'mean_squared_error'
+  - 'r2_score'
+  # - 'median_absolute_error'
+  # - 'explained_variance_score'
+
+plot_info:
+  points_num: 100
+  xlabel: 'Exp. data for lg$(q)$'
+  ylabel: 'DimNet prediction'
