@@ -9,7 +9,8 @@
 
 Go to the folder called `tutorials` and run the jupyter notebook.
 
-We have posted an example to demonstrate how to discover dimensionally homogeneous differential equations in spring-mass-damping systems.
+- `discover_pde_from_data.ipynb`: discover dimensionless numbers and dimensionally homogeneous differential equations in spring-mass-damping systems.
+- `keyhole_example.ipynb`: discover dimensionless numbers and scaling laws based on experimental measurements.
 
 We will update other examples and simplify the codes in this repository.
 
