@@ -23,7 +23,6 @@ out/
 *.iml
 *.tmp
 
-
 # C extensions
 *.so
 
