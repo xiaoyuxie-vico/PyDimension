@@ -9,7 +9,8 @@
 
 Go to the folder called `tutorials` and run the jupyter notebook.
 
-We have posted an example to demonstrate how to discover dimensionally homogeneous differential equations in spring-mass-damping systems.
+- `discover_pde_from_data.ipynb`: discover dimensionless numbers and dimensionally homogeneous differential equations in spring-mass-damping systems.
+- `keyhole_example.ipynb`: discover dimensionless numbers and scaling laws based on experimental measurements.
 
 We will update other examples and simplify the codes in this repository.
 
@@ -24,6 +25,16 @@ We will update other examples and simplify the codes in this repository.
   author={Xie, Xiaoyu and Liu, Wing Kam and Gan, Zhengtao},
   journal={arXiv preprint arXiv:2111.03583},
   year={2021}
+}
+@article{gan2021universal,
+  title={Universal scaling laws of keyhole stability and porosity in 3D printing of metals},
+  author={Gan, Zhengtao and Kafka, Orion L and Parab, Niranjan and Zhao, Cang and Fang, Lichao and Heinonen, Olle and Sun, Tao and Liu, Wing Kam},
+  journal={Nature communications},
+  volume={12},
+  number={1},
+  pages={1--8},
+  year={2021},
+  publisher={Nature Publishing Group}
 }
 @article{saha2021hierarchical,
   title={Hierarchical Deep Learning Neural Network (HiDeNN): An artificial intelligence (AI) framework for computational science and engineering},
