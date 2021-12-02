@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+'''
+@author: Xiaoyu Xie
+@email: xiaoyuxie2020@u.northwestern.edu
+@date: Jan. 28th 2021
+'''
+
 import numpy as np
 
 class DimensionZoo(object):
