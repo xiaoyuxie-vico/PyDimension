@@ -36,7 +36,7 @@ Activate the virtual environment:
 
 **You can run the code on Colab by clicking the icon:**
 
-[![launch](https://colab.research.google.com/assets/colab-badge.svg)][https://drive.google.com/file/d/1SelA0bDnlux4Gj597YQKEPgtfU2bI2sg/view?usp=sharing]
+[![launch](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1SelA0bDnlux4Gj597YQKEPgtfU2bI2sg/view?usp=sharing)
 
 # Tutorials and examples
 
