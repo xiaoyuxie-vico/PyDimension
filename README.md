@@ -41,7 +41,39 @@ Go to the folder called `tutorials` and run the jupyter notebook.
 
 We will update other examples and simplify the codes in this repository.
 
+# Code structure
+
+```
+.
+├── LICENSE
+├── README.md
+├── __init__.py
+├── configs
+│   ├── __init__.py
+│   └── config_oscillation.yml
+├── dataset
+│   ├── dataset_oscillation.csv
+│   └── keyhole_data.csv
+├── models
+├── requirements.txt
+├── tutorials
+│   ├── __init__.py
+│   ├── discover_pde_from_data.ipynb
+│   └── keyhole_example.ipynb
+└── utils
+    ├── __init__.py
+		├── BIC.py
+    ├── MSolver.py
+    ├── config_parser.py
+    ├── dimension_zoo.py
+    ├── gen_pde_dataset.py
+    └── tools.py
+```
+
+
+
 # Citations
+
 ```
 @article{xie2021data,
   title={Data-driven discovery of dimensionless numbers and scaling laws from experimental measurements},
