@@ -18,6 +18,7 @@ pysindy==1.3.0
 ## 1. Local version
 
 You can install these packages with by creating an virtual environment via Anaconda:
+
 `conda create --name PyDimension --file requirements.txt`
 
 Activate the virtual environment:
@@ -26,7 +27,7 @@ Activate the virtual environment:
 
 ## 2. Online version
 
-**You can also use the online version code in `tutorials` folder by clicking the icon:**
+**Note that you can also use the online version code in `tutorials` folder by simply clicking the icon:**
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/xiaoyuxie-vico/PyDimension/main)
 
