@@ -14,16 +14,26 @@ scikit-learn>=1.0.1
 pyyaml==6.0
 ```
 
+## 1. Local version
+
 You can install these packages with by creating an virtual environment via Anaconda:
 `conda create --name PyDimension --file requirements.txt`
+
+Activate the virtual environment:
+
+`conda activate PyDimension `
+
+## 2. Online version
+
+**You can also use the online version code in `tutorials` folder by clicking the icon:**
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/xiaoyuxie-vico/PyDimension/main)
 
 # Tutorials and examples
 
 Go to the folder called `tutorials` and run the jupyter notebook.
 
 - `discover_pde_from_data.ipynb`: discover dimensionless numbers and dimensionally homogeneous differential equations in spring-mass-damping systems.
-
-**Lauch the online version code in `tutorials` folder**: [![Binder](https://mybinder.org/v2/gh/xiaoyuxie-vico/PyDimension/9a76b0b796f8841363bcad37fe593425fd333c21?urlpath=lab%2Ftree%2Ftutorials%2Fdiscover_pde_from_data.ipynb)
 
 - `keyhole_example.ipynb`: discover dimensionless numbers and scaling laws based on experimental measurements.
 
