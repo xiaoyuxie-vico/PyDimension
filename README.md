@@ -5,7 +5,19 @@
 
 **Abstract**: Dimensionless numbers and scaling laws provide elegant insights into the characteristic properties of physical systems. Classical dimensional analysis and similitude theory fail to identify a set of unique dimensionless numbers for a highly-multivariable system with incomplete governing equations. In this study, we embed the principle of dimensional invariance into a two-level machine learning scheme to automatically discover dominant and unique dimensionless numbers and scaling laws from data. The proposed methodology, called dimensionless learning, can reduce high-dimensional parametric spaces into descriptions involving just a few physically-interpretable dimensionless parameters, which signiﬁcantly simpliﬁes the process design and optimization of the system. We demonstrate the algorithm by solving several challenging engineering problems with noisy experimental measurements (not synthetic data) collected from the literature. The examples include turbulent Rayleigh-Bénard convection, vapor depression dynamics in laser melting of metals, and porosity formation in 3D printing. We also show that the proposed approach can identify dimensionally-homogeneous differential equations with minimal parameters by leveraging sparsity-promoting techniques.
 
-# Usage
+# Requirements
+```
+matplotlib==3.4.3
+derivative==0.3.1
+pandas==1.3.4
+scikit-learn>=1.0.1
+pyyaml==6.0
+```
+
+Create an virtual environment via Anaconda:
+`conda create --name PyDimension --file requirements.txt`
+
+# Tutorials and examples
 
 Go to the folder called `tutorials` and run the jupyter notebook.
 
