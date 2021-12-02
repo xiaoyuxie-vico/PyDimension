@@ -62,7 +62,7 @@ We will update other examples and simplify the codes in this repository.
 │   └── keyhole_example.ipynb
 └── utils
     ├── __init__.py
-		├── BIC.py
+    ├── BIC.py
     ├── MSolver.py
     ├── config_parser.py
     ├── dimension_zoo.py
