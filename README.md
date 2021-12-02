@@ -105,4 +105,5 @@ We will update other examples and simplify the codes in this repository.
 # Contact
 If you have any questions or want to contribute to thsi respository, please contact: 
 - Xiaoyu Xie
+- Northwestern University, Mechanical Engineering
 - xiaoyuxie2020@u.northwestern.edu
