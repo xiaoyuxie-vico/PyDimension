@@ -2,7 +2,6 @@
 
 import random
 import numpy as np
-import traceback
 
 np.set_printoptions(suppress=True)
 

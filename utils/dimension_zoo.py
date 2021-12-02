@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import torch
 
 class DimensionZoo(object):
     '''Store the dimension for input and output
