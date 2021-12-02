@@ -26,7 +26,7 @@ Activate the virtual environment:
 
 `conda activate PyDimension `
 
-## 2. Online version
+## 2. Online version - Binder
 
 **Note that you can also use the online version code in `tutorials` folder by simply clicking the icon:**
 
