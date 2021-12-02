@@ -1,7 +1,8 @@
 # Implementation for dimensionless learning, a data-driven dimensional analysis for scientific problems
 
 **Title: Data-driven discovery of dimensionless numbers and scaling laws from experimental measurements.** 
-[Paper link](http://arxiv.org/abs/2111.03583)
+
+You can find the preprint paper at [here](http://arxiv.org/abs/2111.03583).
 
 **Abstract**: Dimensionless numbers and scaling laws provide elegant insights into the characteristic properties of physical systems. Classical dimensional analysis and similitude theory fail to identify a set of unique dimensionless numbers for a highly-multivariable system with incomplete governing equations. In this study, we embed the principle of dimensional invariance into a two-level machine learning scheme to automatically discover dominant and unique dimensionless numbers and scaling laws from data. The proposed methodology, called dimensionless learning, can reduce high-dimensional parametric spaces into descriptions involving just a few physically-interpretable dimensionless parameters, which signiﬁcantly simpliﬁes the process design and optimization of the system. We demonstrate the algorithm by solving several challenging engineering problems with noisy experimental measurements (not synthetic data) collected from the literature. The examples include turbulent Rayleigh-Bénard convection, vapor depression dynamics in laser melting of metals, and porosity formation in 3D printing. We also show that the proposed approach can identify dimensionally-homogeneous differential equations with minimal parameters by leveraging sparsity-promoting techniques.
 
@@ -25,7 +26,7 @@ Activate the virtual environment:
 
 `conda activate PyDimension `
 
-## 2. Online version
+## 2. Online version - Binder
 
 **Note that you can also use the online version code in `tutorials` folder by simply clicking the icon:**
 
@@ -62,7 +63,7 @@ We will update other examples and simplify the codes in this repository.
 │   └── keyhole_example.ipynb
 └── utils
     ├── __init__.py
-		├── BIC.py
+    ├── BIC.py
     ├── MSolver.py
     ├── config_parser.py
     ├── dimension_zoo.py
@@ -105,4 +106,5 @@ We will update other examples and simplify the codes in this repository.
 # Contact
 If you have any questions or want to contribute to thsi respository, please contact: 
 - Xiaoyu Xie
+- Northwestern University, Mechanical Engineering
 - xiaoyuxie2020@u.northwestern.edu
