@@ -11,11 +11,12 @@ You can find the preprint paper at [here](http://arxiv.org/abs/2111.03583).
 
 # Requirements
 ```
-matplotlib==3.4.3
+python==3.9.7
+matplotlib==3.1.3
 derivative==0.3.1
 pandas==1.3.4
-scikit-learn>=1.0.1
 pyyaml==6.0
+scikit-learn==0.24.2
 pysindy==1.3.0
 ```
 
