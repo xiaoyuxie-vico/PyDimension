@@ -54,31 +54,31 @@ We will update other examples and simplify the codes in this repository.
 
 # Code structure
 
-```
+```shell
 .
 ├── LICENSE
 ├── README.md
 ├── __init__.py
 ├── configs
 │   ├── __init__.py
-│   └── config_oscillation.yml
+│   └── config_oscillation.yml						# configuration for spring-mass-damping example
 ├── dataset
-│   ├── dataset_oscillation.csv
-│   └── keyhole_data.csv
+│   ├── dataset_oscillation.csv						# dataset for spring-mass-damping example
+│   └── keyhole_data.csv									# dataset for keyhole dynamics
 ├── models
-├── requirements.txt
+├── requirements.txt											# required python packages
 ├── tutorials
 │   ├── __init__.py
-│   ├── discover_pde_from_data.ipynb
-│   └── keyhole_example.ipynb
+│   ├── discover_pde_from_data.ipynb			# example for spring-mass-damping
+│   └── keyhole_example.ipynb							# example for keyhole dynamics
 └── utils
     ├── __init__.py
-    ├── BIC.py
-    ├── MSolver.py
-    ├── config_parser.py
-    ├── dimension_zoo.py
-    ├── gen_pde_dataset.py
-    └── tools.py
+    ├── BIC.py								# calculate BIC to select the best model
+    ├── MSolver.py						# calculate basis vectors
+    ├── config_parser.py			# configer to parse configuration
+    ├── dimension_zoo.py			# store dimension matrix and others matrix information
+    ├── gen_pde_dataset.py		# generate spring-mass-damping dataset based on the analytical solution
+    └── tools.py							# some tools
 ```
 
 
