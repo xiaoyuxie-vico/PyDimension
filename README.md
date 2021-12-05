@@ -12,7 +12,7 @@ Compared with classical dimensional analysis which only can know the required nu
 
 You can find the preprint paper at [here](http://arxiv.org/abs/2111.03583).
 
-## Paper Paper highlights
+## Paper highlights
 
 - Automatically discover unique and dominant **dimensionless numbers** with clear physical meaning and **scaling laws** from complex systems based on experimental measurements;
 - Identify **dimensionally homogeneous differential equations** with minimal parameters by leveraging sparsity-promoting techniques (SINDy).
