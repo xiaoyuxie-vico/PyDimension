@@ -1,10 +1,18 @@
-# Implementation for dimensionless learning, a data-driven dimensional analysis for scientific problems
+# Dimensionless learning, the next generation machine leanring algorithm for scientific problems
+
+## What is Dimensionless learning
+
+Compared with standard machine learning methods, dimensionless learning embeds a physical constraint, dimensional invariance in different variables, into machine learning algorithms, which means we restrict the large possible solution space into a smaller one. That is to say, we change the function set of machine leanring model and make it is feasible to be trained even for a small number of dataset (about 100-200 data points).
+
+Compared with classical dimensional analysis which only can know the required number of dimensionless numbers for a complex problem, dimensionless learning provides a systematic way to identify **unique and dominant** dimensionless numbers.
+
+## Where to find the paper
 
 **Title: Data-driven discovery of dimensionless numbers and scaling laws from experimental measurements.** 
 
 You can find the preprint paper at [here](http://arxiv.org/abs/2111.03583).
 
-**Paper highlights:**
+## Paper Paper highlights
 
 - Automatically discover unique and dominant **dimensionless numbers** with clear physical meaning and **scaling laws** from complex systems based on experimental measurements;
 - Identify **dimensionally homogeneous differential equations** with minimal parameters by leveraging sparsity-promoting techniques (SINDy).
