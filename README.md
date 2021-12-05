@@ -1,8 +1,8 @@
 # Dimensionless learning, the next generation machine leanring algorithm for scientific problems
 
-## What is Dimensionless learning
+## What is dimensionless learning
 
-Dimensionless learning is a data-driven dimensional analysis method.
+In short, dimensionless learning is a data-driven dimensional analysis method.
 
 Compared with standard machine learning methods, dimensionless learning embeds a physical constraint, dimensional invariance in different variables, into machine learning algorithms, which means we restrict the large possible solution space into a smaller one. That is to say, we change the function set of machine leanring model and make it is feasible to be trained even for a small number of dataset (about 100-200 data points).
 
