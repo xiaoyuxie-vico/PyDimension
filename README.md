@@ -21,7 +21,6 @@ You can find the preprint paper at [here](http://arxiv.org/abs/2111.03583).
 
 # Requirements
 ```
-python==3.9.7
 matplotlib==3.1.3
 derivative==0.3.1
 pandas==1.3.4
