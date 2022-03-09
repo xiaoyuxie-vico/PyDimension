@@ -92,7 +92,7 @@ basis_vectors = null(D, 'r')
 #          0    1.0000         0
 #          0         0    1.0000
 ```
-To simplify the basis vectors, the second column can substract the third column, and the third column can times 2. Then, we obtain the final basis vectors:
+To simplify the basis vectors, the second column can substract the third column, and the second column can times 2. Then, we obtain the final basis vectors:
 
 $\boldsymbol{w_{b1}} = [0,1,0,0,1,0,0]^T,$
 
