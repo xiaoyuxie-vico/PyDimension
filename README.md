@@ -18,7 +18,7 @@ You can find the preprint paper at [here](http://arxiv.org/abs/2111.03583).
 - Automatically discover unique and dominant **dimensionless numbers** with clear physical meaning and **scaling laws** from complex systems based on experimental measurements;
 - Identify **dimensionally homogeneous differential equations** with minimal parameters by leveraging sparsity-promoting techniques (SINDy).
 
-# Requirements
+## Requirements
 ```
 matplotlib==3.1.3
 derivative==0.3.1
@@ -28,13 +28,13 @@ scikit-learn==0.24.2
 pysindy==1.3.0
 ```
 
-# Tutorials and examples
+## Tutorials and examples
 
 Go to the folder called `scaling_law` and `PDE_discovery` and run the jupyter notebook.
 
 We will update other examples and simplify the codes in this repository.
 
-# How to find the basis vectors
+## How to find the basis vectors
 For the turbulent Rayleigh-Benard convection case, you can calculate the basis vectors using python or matlab.
 
 Python:
@@ -74,7 +74,7 @@ $\boldsymbol{w_{b2}} = [0,0,0,0,0,1,-1]^T,$
 $\boldsymbol{w_{b3}} = [3,0,0,1,0,-2,0]^T.$
 
 
-# Citations
+## Citations
 
 ```
 @article{xie2021data,
@@ -104,7 +104,7 @@ $\boldsymbol{w_{b3}} = [3,0,0,1,0,-2,0]^T.$
 }
 ```
 
-# Contact
+## Contact
 If you have any questions or want to contribute to thsi respository, please contact: 
 - Xiaoyu Xie
 - Northwestern University, Mechanical Engineering
