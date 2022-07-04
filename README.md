@@ -29,35 +29,9 @@ scikit-learn==0.24.2
 pysindy==1.3.0
 ```
 
-## 1. Local version
-
-You can install these packages with by creating an virtual environment via Anaconda:
-
-`conda create --name PyDimension --file requirements.txt`
-
-Activate the virtual environment:
-
-`conda activate PyDimension `
-
-## 2. Online version - Binder
-
-**Note that you can also use the online version code in `tutorials` folder by simply clicking the icon:**
-
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/xiaoyuxie-vico/PyDimension/main)
-
-## 3. Online version - Colab
-
-**You can run the code on Colab by clicking the icon:**
-
-[![launch](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1SelA0bDnlux4Gj597YQKEPgtfU2bI2sg/view?usp=sharing)
-
 # Tutorials and examples
 
-Go to the folder called `tutorials` and run the jupyter notebook.
-
-- `discover_pde_from_data.ipynb`: discover dimensionless numbers and dimensionally homogeneous differential equations in spring-mass-damping systems.
-
-- `keyhole_example.ipynb`: discover dimensionless numbers and scaling laws based on experimental measurements.
+Go to the folder called `scaling_law` and `PDE_discovery` and run the jupyter notebook.
 
 We will update other examples and simplify the codes in this repository.
 
@@ -99,37 +73,6 @@ $\boldsymbol{w_{b1}} = [0,1,0,0,1,0,0]^T,$
 $\boldsymbol{w_{b2}} = [0,0,0,0,0,1,-1]^T,$
 
 $\boldsymbol{w_{b3}} = [3,0,0,1,0,-2,0]^T.$
-
-
-# Code structure
-
-```shell
-.
-├── LICENSE
-├── README.md
-├── __init__.py
-├── configs
-│   ├── __init__.py
-│   └── config_oscillation.yml	            # configuration for spring-mass-damping example
-├── dataset
-│   ├── dataset_oscillation.csv	            # dataset for spring-mass-damping example
-│   └── keyhole_data.csv		    # dataset for keyhole dynamics
-├── models
-├── requirements.txt			    # required python packages
-├── tutorials
-│   ├── __init__.py
-│   ├── discover_pde_from_data.ipynb	    # example for spring-mass-damping
-│   └── keyhole_example.ipynb		    # example for keyhole dynamics
-└── utils
-    ├── __init__.py
-    ├── BIC.py			            # calculate BIC to select the best model
-    ├── MSolver.py			    # calculate basis vectors
-    ├── config_parser.py		    # configer to parse configuration
-    ├── dimension_zoo.py		    # store dimension matrix and others matrix information
-    ├── gen_pde_dataset.py		    # generate spring-mass-damping dataset based on the analytical solution
-    └── tools.py			    # some tools
-```
-
 
 
 # Citations
