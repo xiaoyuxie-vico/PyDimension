@@ -6,7 +6,7 @@ The proposed dimensionless learning is a powerful technique to identify scientif
 
 - Dimensionless number at the feature level
 - Scaling law at the algebraic equation level
-- Governing equation at the differential equation level. 
+- Governing equation at the differential equation level
 
 Unlike purely data-driven approaches that easily suffer from overfitting on small or noisy datasets, this method incorporates fundamental physical knowledge of dimensional invariance and symmetric invariance as physical constraints or regularizations into data-driven models to perform well on limited and/or noisy data. The embedded physical invariance reduces the learning space and eliminates the strong dependence between variables. This method is a physics-based dimension reduction approach that represents features as dimensionless numbers and transforms data points into a low-dimensional pattern that is unaffected by units and scales. Thus, in addition to being applicable to limited and/or noisy data, the presented approach significantly improves the interpretability of representation learning because dimensionless numbers are physically interpretable. Lower dimension and better interpretability also allow for qualitative and quantitative analysis of the systems of interest. 
 
