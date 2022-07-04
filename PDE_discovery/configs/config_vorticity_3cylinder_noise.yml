@@ -1,0 +1,89 @@
+case_id_list:
+    v2-Re-50: 
+        ref_params:
+            l_ref: 0.0850000
+            v_ref: 68.000000
+            # p_ref: 1.00E+06
+            p_ref: 1.3000E+04
+        sim_params:
+            rho: 0.0010000
+            mu: 0.0001156
+            g: 981
+            dt: 0.000004
+        x_range:
+            - 140
+            - 490
+        y_range:
+            - 10
+            - 212
+        SVD_mode:
+            - 3 # u
+            - 4 # v
+            - 4 # w
+        fitting: 
+            # avoid the select the boundary points due to polynomial fitting
+            boundary_num: # x, y, t
+                - 10
+                - 10
+                - 10
+            deg: 4
+    v2-Re-90:
+        ref_params:
+            l_ref: 0.1000000
+            v_ref: 90.000000
+            # p_ref: 1.70E+05
+            p_ref: 8.4300E+05
+        sim_params:
+            rho: 0.0011000
+            mu: 0.0001100
+            g: 981
+            dt: 0.000004
+        x_range:
+            - 140
+            - 490
+        y_range:
+            - 20
+            - 202
+        x_range:
+            - 140
+            - 490
+        y_range:
+            - 10
+            - 212
+        SVD_mode:
+            - 3 # u
+            - 4 # v
+            - 4 # w
+        fitting: 
+            boundary_num: # x, y, t
+                - 10
+                - 10
+                - 10
+            deg: 4
+    v2-Re-100:  # good
+        ref_params:
+            l_ref: 0.1000000
+            v_ref: 100.000000
+            # p_ref: 1.60E+05
+            p_ref: 8.5300E+05
+        sim_params:
+            rho: 0.0011000
+            mu: 0.0001100
+            g: 981
+            dt: 0.000004
+        x_range:
+            - 140
+            - 490
+        y_range: 
+            - 10
+            - 212
+        SVD_mode:
+            - 6 # u
+            - 7 # v
+            - 6 # w
+        fitting: 
+            boundary_num: # x, y, t
+                - 10
+                - 10
+                - 10
+            deg: 4
