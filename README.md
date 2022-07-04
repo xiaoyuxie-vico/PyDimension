@@ -10,7 +10,10 @@ Compared with classical dimensional analysis which only can know the required nu
 
 ## Where to find the paper
 
-**Title: Data-driven discovery of dimensionless numbers and scaling laws from experimental measurements.** 
+**Title: Data-driven discovery of dimensionless numbers and governing laws from scarce measurements.** 
+
+Summary:
+In this study, we propose a mechanistic data-driven approach, called dimensionless learning. This method consists of two main workflows to discover scientific knowledge from data. The first workflow embeds the principle of dimensional invariance (i.e., physical laws are independent on an arbitrary choice of basic units of measurements) into a two-level machine learning scheme to automatically discover dominant dimensionless numbers and scaling laws from noisy experimental measurements of complex physical systems. This invariance incentivizes the learning of scale-invariant and physically interpretable low-dimensional patterns of complex high-dimensional systems. We demonstrate the first workflow by solving three challenging problems in science and engineering with noisy experimental measurements collected from the literature. The problems include turbulent Rayleigh-Benard convection, vapor depression dynamics, and porosity formation during 3D printing. In the second workflow, the dimensionless learning is integrated with sparsity-promoting techniques (such as SINDy and proposed symmetric invariant SINDy) to identify dimensionally homogeneous differential equations and dimensionless numbers from data. The analyses are performed on five differential equations with and without noisy data effect, including Navier-Stokes, Euler, vorticity equations, the governing equations for spring-mass-damper systems and dynamic loading beam systems.
 
 You can find the preprint paper at [here](http://arxiv.org/abs/2111.03583).
 
