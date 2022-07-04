@@ -1,0 +1,79 @@
+case_id_list:
+    v2-Re-100: 
+        ref_params:
+            l_ref: 0.1000000
+            v_ref: 100.000000
+            p_ref: 1.60E+05
+        sim_params:
+            rho: 0.0011000
+            mu: 0.0001100
+            g: 981
+            dt: 0.000004
+        x_range:
+            - 150
+            - 195
+        y_range: 
+            - 10
+            - 212
+        SVD_mode:
+            - 4 # u
+            - 6 # v
+            - 6 # w
+        fitting: 
+            boundary_num: # x, y, t
+                - 5
+                - 5
+                - 5
+            deg: 3
+    v1-Re-170:
+        ref_params:
+            l_ref: 0.0950000
+            v_ref: 165.430000
+            p_ref: 1.20E+05
+        sim_params:
+            rho: 0.0011250
+            mu: 0.0001040
+            g: 981
+            dt: 0.00004
+        x_range:
+            - 150
+            - 180
+        y_range: 
+            - 25
+            - 190
+        SVD_mode:
+            - 11 # u
+            - 11 # v
+            - 11 # w
+        fitting: 
+            boundary_num: # x, y, t
+                - 5
+                - 5
+                - 5
+            deg: 5
+    v3-Re-200:
+        ref_params:
+            l_ref: 0.1050000
+            v_ref: 170.430000
+            p_ref: 1.00E+05
+        sim_params:
+            rho: 0.0011400
+            mu: 0.0001020
+            g: 981
+            dt: 0.000004
+        x_range:
+            - 150
+            - 190
+        y_range: 
+            - 10
+            - 212
+        SVD_mode:
+            - 18 # u
+            - 18 # v
+            - 18 # p
+        fitting: 
+            boundary_num: # x, y, t
+                - 5
+                - 5
+                - 5
+            deg: 5
