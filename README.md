@@ -40,6 +40,10 @@ Go to the folder called `scaling_law` and `PDE_discovery` and run the jupyter no
 
 We will update other examples and simplify the codes in this repository.
 
+## Dataset
+
+The dataset for scaling law identification is at [here](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/dataset).
+
 ## How to find the basis vectors
 For the turbulent Rayleigh-Benard convection case, you can calculate the basis vectors using python or matlab.
 
