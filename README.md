@@ -38,8 +38,6 @@ pysindy==1.3.0
 
 Go to the folder called `scaling_law` and `PDE_discovery` and run the jupyter notebook.
 
-We will update other examples and simplify the codes in this repository.
-
 ## Dataset
 
 The dataset for scaling law identification is at [here](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/dataset).
