@@ -4,9 +4,9 @@
 
 The proposed dimensionless learning is a powerful technique to identify scientific knowledge from data at multiple levels: 
 
-- Dimensionless number at the feature level, such as the well-known Reynolds number $\mathrm{Re}=\frac{\rho V l}{\mu}$ in fluid mechanics.
-- Scaling law at the algebraic equation level, such as a simple linar scaling law for vapor depression dynamics in 3D printing $e^*=0.12\mathrm{Ke}-0.30$.
-- Governing equation at the differential equation level, such as Navier-Stokes equation $\frac{\partial \omega}{\partial t}+u\frac{\partial \omega}{\partial x}+v\frac{\partial \omega}{\partial y}=\mathrm{\frac{1}{Re}}(\frac{\partial^2 \omega}{\partial x^2} +\frac{\partial^2 \omega}{\partial y^2})$.
+- Dimensionless number at the feature level, such as the Reynolds number $\mathrm{Re}=\frac{\rho V l}{\mu}$ in fluid mechanics.
+- Scaling law at the algebraic equation level, such as a simple yet effective scaling law for vapor depression dynamics in 3D printing $e^*=0.12\mathrm{Ke}-0.30$.
+- Governing equation at the differential equation level, such as well-known Navier-Stokes equation $\frac{\partial \omega}{\partial t}+u\frac{\partial \omega}{\partial x}+v\frac{\partial \omega}{\partial y}=\mathrm{\frac{1}{Re}}(\frac{\partial^2 \omega}{\partial x^2} +\frac{\partial^2 \omega}{\partial y^2})$.
 
 Unlike purely data-driven approaches that easily suffer from overfitting on small or noisy datasets, this method incorporates fundamental physical knowledge of dimensional invariance and symmetric invariance as physical constraints or regularizations into data-driven models to perform well on limited and/or noisy data. The embedded physical invariance reduces the learning space and eliminates the strong dependence between variables. This method is a physics-based dimension reduction approach that represents features as dimensionless numbers and transforms data points into a low-dimensional pattern that is unaffected by units and scales. Thus, in addition to being applicable to limited and/or noisy data, the presented approach significantly improves the interpretability of representation learning because dimensionless numbers are physically interpretable. Lower dimension and better interpretability also allow for qualitative and quantitative analysis of the systems of interest. 
 
