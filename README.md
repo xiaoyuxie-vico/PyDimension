@@ -4,7 +4,7 @@
 
 The proposed dimensionless learning is a powerful technique to identify scientific knowledge from data at multiple levels: 
 
-- Dimensionless number at the feature level, such as Reynolds number $\mathrm{Re}=\frac{\rho V l}{\mu}$ in fluid mechanics.
+- Dimensionless number at the feature level, such as the well-known Reynolds number $\mathrm{Re}=\frac{\rho V l}{\mu}$ in fluid mechanics.
 - Scaling law at the algebraic equation level, such as a simple linar scaling law for vapor depression dynamics in 3D printing $e^*=0.12\mathrm{Ke}-0.30$.
 - Governing equation at the differential equation level, such as Navier-Stokes equation $\frac{\partial \omega}{\partial t}+u\frac{\partial \omega}{\partial x}+v\frac{\partial \omega}{\partial y}=\mathrm{\frac{1}{Re}}(\frac{\partial^2 \omega}{\partial x^2} +\frac{\partial^2 \omega}{\partial y^2})$.
 
