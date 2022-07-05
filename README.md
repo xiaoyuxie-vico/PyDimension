@@ -111,7 +111,7 @@ $\boldsymbol{w_{b3}} = [3,0,0,1,0,-2,0]^T.$
 ```
 
 ## Contact
-If you have any questions or want to contribute to thsi respository, please contact: 
+If you have any questions or want to contribute to this respository, please contact: 
 - Xiaoyu Xie
 - Northwestern University, Mechanical Engineering
 - xiaoyuxie2020@u.northwestern.edu
