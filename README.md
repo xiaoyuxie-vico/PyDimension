@@ -10,6 +10,11 @@ The proposed dimensionless learning is a powerful technique to identify scientif
 
 Unlike purely data-driven approaches that easily suffer from overfitting on small or noisy datasets, this method incorporates fundamental physical knowledge of dimensional invariance and symmetric invariance as physical constraints or regularizations into data-driven models to perform well on limited and/or noisy data. The embedded physical invariance reduces the learning space and eliminates the strong dependence between variables. This method is a physics-based dimension reduction approach that represents features as dimensionless numbers and transforms data points into a low-dimensional pattern that is unaffected by units and scales. Thus, in addition to being applicable to limited and/or noisy data, the presented approach significantly improves the interpretability of representation learning because dimensionless numbers are physically interpretable. Lower dimension and better interpretability also allow for qualitative and quantitative analysis of the systems of interest. 
 
+## Paper highlights
+
+- Automatically discover unique and dominant **dimensionless numbers** with clear physical meaning and **scaling laws** from complex systems based on experimental measurements;
+- Identify **dimensionally homogeneous differential equations** with minimal parameters by leveraging sparsity-promoting techniques.
+
 ## Where to find the paper
 
 **Title: Data-driven discovery of dimensionless numbers and governing laws from scarce measurements.** 
@@ -17,12 +22,7 @@ Unlike purely data-driven approaches that easily suffer from overfitting on smal
 Abstract:
 Dimensionless numbers and scaling laws provide elegant insights into the characteristic properties of physical systems. Classical dimensional analysis and similitude theory fail to identify a set of unique dimensionless numbers for a highly multi-variable system with incomplete governing equations. This paper introduces a mechanistic data-driven approach that embeds the principle of dimensional invariance into a two-level machine learning scheme to automatically discover dominant dimensionless numbers and governing laws (including scaling laws and differential equations) from scarce measurement data. The proposed methodology, called dimensionless learning, is a physics-based dimension reduction technique. It can reduce high-dimensional parameter spaces to descriptions involving only a few physically interpretable dimensionless parameters, greatly simplifying complex process design and system optimization. We demonstrate the algorithm by solving several challenging engineering problems with noisy experimental measurements (not synthetic data) collected from the literature. Examples include turbulent Rayleigh-Bénard convection, vapor depression dynamics in laser melting of metals, and porosity formation in 3D printing. Lastly, we show that the proposed approach can identify dimensionally homogeneous differential equations with dimensionless number(s) by leveraging sparsity-promoting techniques.
 
-You can find the preprint paper at [here](http://arxiv.org/abs/2111.03583).
-
-## Paper highlights
-
-- Automatically discover unique and dominant **dimensionless numbers** with clear physical meaning and **scaling laws** from complex systems based on experimental measurements;
-- Identify **dimensionally homogeneous differential equations** with minimal parameters by leveraging sparsity-promoting techniques.
+You can find the preprint paper at [Arxiv](http://arxiv.org/abs/2111.03583) or [ResearchSquare](https://assets.researchsquare.com/files/rs-1122326/v1_covered.pdf?c=1639152750).
 
 ## Requirements
 ```
