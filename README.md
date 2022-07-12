@@ -34,7 +34,7 @@ scikit-learn==0.24.2
 pysindy==1.3.0
 ```
 
-## Tutorials and examples
+## Getting started
 
 Go to the folder called `scaling_law` and `PDE_discovery` and run the jupyter notebook.
 
