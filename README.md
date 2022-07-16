@@ -1,4 +1,4 @@
-# Dimensionless learning for scientific knowledge discovery
+# Dimensionless learning for data-drievn scientific knowledge discovery
 
 ## What is dimensionless learning
 
