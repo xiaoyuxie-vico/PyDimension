@@ -43,7 +43,7 @@ pysindy==1.3.0
 
 Go to the folder called `scaling_law` and `PDE_discovery` and run the jupyter notebook.
 
-One typical example for scaling law discovery can be found in `scaling_law/DL_keyhole_example.py`. You can run it directly by using `python DL_keyhole_example.py` after `cd` to this folder. The optimization method is a pattern search-based two-level optimization method.
+Two typical examples for the scaling law and dimensionless numbers discovery can be found in `scaling_law/keyhole_example_pattern_search.py` and `scaling_law/keyhole_example_gradient_descent.ipynb`. You can run it directly by using `python keyhole_example_pattern_search.py` after `cd` to this folder. 
 
 ## Dataset
 
