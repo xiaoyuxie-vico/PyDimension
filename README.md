@@ -1,4 +1,4 @@
-# Dimensionless learning for scientific knowledge discovery (dimensionless numbers, scaling laws, and PDEs)
+# Dimensionless learning for scientific knowledge discovery
 
 ## What is dimensionless learning
 
