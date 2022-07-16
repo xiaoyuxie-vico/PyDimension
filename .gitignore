@@ -14,7 +14,6 @@ results/
 out/
 *zip
 *jpg
-*png
 *logs
 *.idea/
 *.ipynb_checkpoints
