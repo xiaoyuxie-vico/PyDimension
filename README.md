@@ -1,6 +1,6 @@
 # Dimensionless learning for data-drievn scientific knowledge discovery
 
-## What is dimensionless learning
+## Identified knowledge in different levels
 
 The proposed dimensionless learning is a powerful technique to identify scientific knowledge from data at multiple levels: 
 
