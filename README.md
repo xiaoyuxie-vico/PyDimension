@@ -46,7 +46,7 @@ pysindy==1.3.0
 ## Getting started
 
 1. Scaling law and dimenionless numbers dicsovery
-Two typical examples for the scaling law and dimensionless numbers discovery can be found in `scaling_law/keyhole_example_pattern_search.py` and `scaling_law/keyhole_example_gradient_descent.ipynb`. For the first file, you can run the code directly by using `python keyhole_example_pattern_search.py` after `cd` to this folder. For the second file, you can directly run the jupyter notebook.
+Two typical examples for the scaling law and dimensionless numbers discovery can be found in [scaling_law/keyhole_example_pattern_search.py](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/keyhole_example_pattern_search.py) and [scaling_law/keyhole_example_gradient_descent.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/keyhole_example_gradient_descent.ipynb). For the first file, you can run the code directly by using `python keyhole_example_pattern_search.py` after `cd` to this folder. For the second file, you can directly run the jupyter notebook.
 
 2. Generalization comparison with popular machine learning algorithms is shown in [scaling_law/scaling_law/cross_materials.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/cross_materials.ipynb) and [scaling_law/cross_scales.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/cross_scales.ipynb).
 
