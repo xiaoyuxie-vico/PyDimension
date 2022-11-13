@@ -46,13 +46,15 @@ pysindy==1.3.0
 ## Getting started
 
 1. Scaling law and dimenionless numbers dicsovery
-Two typical examples for the scaling law and dimensionless numbers discovery can be found in `scaling_law/keyhole_example_pattern_search.py` and `scaling_law/keyhole_example_gradient_descent.ipynb`. For the first file, you can run the code directly by using `python keyhole_example_pattern_search.py` after `cd` to this folder. For the second file, you can directly run the jupyter notebook.
+Two typical examples for the scaling law and dimensionless numbers discovery can be found in [scaling_law/keyhole_example_pattern_search.py](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/keyhole_example_pattern_search.py) and [scaling_law/keyhole_example_gradient_descent.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/keyhole_example_gradient_descent.ipynb). For the first file, you can run the code directly by using `python keyhole_example_pattern_search.py` after `cd` to this folder. For the second file, you can directly run the jupyter notebook.
 
 2. Generalization comparison with popular machine learning algorithms is shown in [scaling_law/scaling_law/cross_materials.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/cross_materials.ipynb) and [scaling_law/cross_scales.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/cross_scales.ipynb).
 
 3. A simplified version for pattern search-based two-level optimizaiton can be found at [scaling_law/utils/solver.py](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/utils/solver.py).
 
-4. More differential equation discovery examples are shown in [`PDE_discovery`](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/PDE_discovery). 
+4. Sensitive analysis for keyhole example can be found at[scaling_law/sensitive_analysis.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/sensitive_analysis.ipynb)
+
+5. More differential equation discovery examples are shown in [`PDE_discovery`](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/PDE_discovery). 
 
 
 ## Dataset
