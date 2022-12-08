@@ -19,7 +19,7 @@ The proposed dimensionless learning is a powerful technique to identify scientif
 
 - **Dimension reduction**: 
   - Dimensionless leanring can reduce a large number of parameters to a few dominant dimensionless numbers.
-- **Better explainability**: 
+- **Better interpretability**: 
   - The identified dimensionless can be interpreted as the ratio of different forces, velocities, or energies, etc.
   - Lower dimension also allow for qualitative and quantitative analysis of the systems of interest. 
 - **Works well in small dataset**: 
