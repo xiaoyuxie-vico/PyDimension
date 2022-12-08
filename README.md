@@ -31,7 +31,7 @@ The proposed dimensionless learning is a powerful technique to identify scientif
 
 **Title: Data-driven discovery of dimensionless numbers and governing laws from scarce measurements.** 
 
-You can find the preprint paper at [Arxiv](http://arxiv.org/abs/2111.03583) or [ResearchSquare](https://assets.researchsquare.com/files/rs-1122326/v1_covered.pdf?c=1639152750).
+This paper was published on ***Nature Communications***. You can find the paper [here](https://www.nature.com/articles/s41467-022-35084-w#Sec2)
 
 ## Requirements
 ```
@@ -67,11 +67,21 @@ The dataset for scaling law identification is at [here](https://github.com/xiaoy
 ## Citations
 
 ```
-@article{xie2021data,
-  title={Data-driven discovery of dimensionless numbers and scaling laws from experimental measurements},
-  author={Xie, Xiaoyu and Liu, Wing Kam and Gan, Zhengtao},
-  journal={arXiv preprint arXiv:2111.03583},
-  year={2021}
+@article{xie_data-driven_2022,
+	title = {Data-driven discovery of dimensionless numbers and governing laws from scarce measurements},
+	volume = {13},
+	copyright = {2022 The Author(s)},
+	issn = {2041-1723},
+	url = {https://www.nature.com/articles/s41467-022-35084-w},
+	doi = {10.1038/s41467-022-35084-w},
+	language = {en},
+	number = {1},
+	urldate = {2022-12-08},
+	journal = {Nature Communications},
+	author = {Xie, Xiaoyu and Samaei, Arash and Guo, Jiachen and Liu, Wing Kam and Gan, Zhengtao},
+	month = dec,
+	year = {2022},
+	pages = {7562},
 }
 @article{gan2021universal,
   title={Universal scaling laws of keyhole stability and porosity in 3D printing of metals},
