@@ -68,7 +68,7 @@ The dataset for scaling law identification is at [here](https://github.com/xiaoy
 
 ```
 @article{xie_data-driven_2022,
-  title = {Data-driven discovery of dimensionless numbers and governing laws from scarce   measurements},
+  title = {Data-driven discovery of dimensionless numbers and governing laws from scarce measurements},
   volume = {13},
   copyright = {2022 The Author(s)},
   issn = {2041-1723},
