@@ -31,7 +31,7 @@ The proposed dimensionless learning is a powerful technique to identify scientif
 
 **Title: Data-driven discovery of dimensionless numbers and governing laws from scarce measurements.** 
 
-This paper was published on ***Nature Communications***. You can find the paper [here](https://www.nature.com/articles/s41467-022-35084-w#Sec2)
+This paper was published on ***Nature Communications***. You can find the paper [here](https://www.nature.com/articles/s41467-022-35084-w#Sec2).
 
 ## Requirements
 ```
