@@ -44,6 +44,8 @@ conda create --name PyDimension --file requirements.txt
 
 ## Getting started
 
+### Scaling law and dimensionless number discovery
+
 1. Scaling law and dimenionless numbers dicsovery
 Two typical examples for the scaling law and dimensionless numbers discovery can be found in [scaling_law/keyhole_example_pattern_search.py](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/keyhole_example_pattern_search.py) and [scaling_law/keyhole_example_gradient_descent.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/keyhole_example_gradient_descent.ipynb). For the first file, you can run the code directly by using `python keyhole_example_pattern_search.py` after `cd` to this folder. For the second file, you can directly run the jupyter notebook.
 
@@ -53,14 +55,15 @@ Two typical examples for the scaling law and dimensionless numbers discovery can
 
 4. Sensitive analysis for keyhole example can be found at [scaling_law/sensitive_analysis.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/sensitive_analysis.ipynb).
 
-5. Discover the governing equations for spring-mass-damper systems: [discover_spring_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_spring_clean.ipynb). I recommend readers to firstly run this code to understand our method in discovering parametrized differential equations.
+### Differential equation and dimensionless number discovery
 
-6. Discover the vorticity form NS equations: [discover_vorticity_equ_3cylinder_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_vorticity_equ_3cylinder_clean.ipynb).
+1. Discover the governing equations for spring-mass-damper systems: [discover_spring_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_spring_clean.ipynb). I recommend readers to firstly run this code to understand our method in discovering parametrized differential equations.
 
-7. Discover the Euler equation: [discover_Euler_equ_3cylidner_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_Euler_equ_3cylidner_clean.ipynb).
+2. Discover the vorticity form NS equations: [discover_vorticity_equ_3cylinder_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_vorticity_equ_3cylinder_clean.ipynb).
 
-5. More differential equation discovery examples are shown in [`PDE_discovery`](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/PDE_discovery). 
+3. Discover the Euler equation: [discover_Euler_equ_3cylidner_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_Euler_equ_3cylidner_clean.ipynb).
 
+4. More differential equation discovery examples are shown in [`PDE_discovery`](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/PDE_discovery). 
 
 ## Dataset
 
