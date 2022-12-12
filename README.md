@@ -34,13 +34,12 @@ The proposed dimensionless learning is a powerful technique to identify scientif
 This paper was published on ***Nature Communications***. You can find the paper [here](https://www.nature.com/articles/s41467-022-35084-w#Sec2).
 
 ## Requirements
+
+The detailed requirements can be found in [requirements.txt](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/requirements.txt).
+
+You can install the requirements using the below command after you change the current directory as PyDimension folder:
 ```
-matplotlib==3.1.3
-derivative==0.3.1
-pandas==1.3.4
-pyyaml==6.0
-scikit-learn==0.24.2
-pysindy==1.3.0
+conda create --name PyDimension --file requirements.txt
 ```
 
 ## Getting started
@@ -56,13 +55,17 @@ Two typical examples for the scaling law and dimensionless numbers discovery can
 
 5. Discover the governing equations for spring-mass-damper systems: [discover_spring_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_spring_clean.ipynb). I recommend readers to firstly run this code to understand our method in discovering parametrized differential equations.
 
+6. Discover the vorticity form NS equations: [discover_vorticity_equ_3cylinder_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_vorticity_equ_3cylinder_clean.ipynb).
+
+7. Discover the Euler equation: [discover_Euler_equ_3cylidner_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_Euler_equ_3cylidner_clean.ipynb).
+
 5. More differential equation discovery examples are shown in [`PDE_discovery`](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/PDE_discovery). 
 
 
 ## Dataset
 
-The dataset for scaling law identification is at [here](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/dataset).
-
+- The dataset for scaling law identification is at [here](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/dataset).
+- The dataset for PDE discovery is at [here](https://drive.google.com/drive/folders/1qERCVtyde1RYCkVQp3g4U21Wu6eq5Yui?usp=share_link).
 
 ## Citations
 
@@ -91,6 +94,7 @@ The dataset for scaling law identification is at [here](https://github.com/xiaoy
   year={2021},
   publisher={Nature Publishing Group}
 }
+# This paper talks about a Dimensionally invariant Neural Network called DimensionNet
 @article{saha2021hierarchical,
   title={Hierarchical Deep Learning Neural Network (HiDeNN): An artificial intelligence (AI) framework for computational science and engineering},
   author={Saha, Sourav and Gan, Zhengtao and Cheng, Lin and Gao, Jiaying and Kafka, Orion L and Xie, Xiaoyu and Li, Hengyang and Tajdari, Mahsa and Kim, H Alicia and Liu, Wing Kam},
