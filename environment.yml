@@ -1,0 +1,17 @@
+name: PyDimension
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - pysindy
+  - matplotlib
+  - pandas
+  - tqdm
+  - termcolor
+  - xgboost
+  - salib
+  - seaborn
+  - ipykernel
+  - sympy
+  - pyyaml
+prefix: /home/xie/anaconda3/envs/PyDimension

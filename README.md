@@ -39,11 +39,18 @@ The Supplymentary Information can be found [here](https://static-content.springe
 
 ## Requirements
 
-The detailed requirements can be found in [requirements.txt](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/requirements.txt).
+The detailed pip requirements can be found in [requirements.txt](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/requirements.txt).
 
-You can install the requirements using the below command after you change the current directory as PyDimension folder:
+Installment:
 ```
-conda create --name PyDimension --file requirements.txt
+pip install -r requirements.txt
+```
+
+The detailed conda requirements can be found in [requirements_conda.txt](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/requirements_conda.txt).
+
+Installment:
+```
+conda create --name PyDimension --file requirements_conda.txt
 ```
 
 ## Getting started
