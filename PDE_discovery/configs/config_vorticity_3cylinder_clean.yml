@@ -80,7 +80,7 @@ case_id_list:
                 - 5
                 - 5
             deg: 3
-    v2-Re-100:  # good
+    v2-Re-100:
         ref_params:
             l_ref: 0.1000000
             v_ref: 100.000000
