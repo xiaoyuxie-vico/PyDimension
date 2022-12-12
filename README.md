@@ -39,18 +39,31 @@ The Supplymentary Information can be found [here](https://static-content.springe
 
 ## Requirements
 
+Environments:
+```
+name: PyDimension
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - pysindy
+  - matplotlib
+  - pandas
+  - tqdm
+  - termcolor
+  - xgboost
+  - salib
+  - seaborn
+  - ipykernel
+  - sympy
+  - pyyaml
+```
+
 The detailed pip requirements can be found in [requirements.txt](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/requirements.txt).
 
 Installment:
 ```
-pip install -r requirements.txt
-```
-
-The detailed conda requirements can be found in [requirements_conda.txt](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/requirements_conda.txt).
-
-Installment:
-```
-conda create --name PyDimension --file requirements_conda.txt
+conda create --name PyDimension --file requirements.txt
 ```
 
 ## Getting started
