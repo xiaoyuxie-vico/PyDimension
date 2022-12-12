@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from dataset import Dataset
-from solver import DimensionlessLearning
+from utils.solver import DimensionlessLearning
 
 matplotlib.use('Agg')
 plt.rcParams["font.family"] = 'Arial'
