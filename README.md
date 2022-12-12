@@ -31,7 +31,11 @@ The proposed dimensionless learning is a powerful technique to identify scientif
 
 **Title: Data-driven discovery of dimensionless numbers and governing laws from scarce measurements.** 
 
-This paper was published on ***Nature Communications***. You can find the paper [here](https://www.nature.com/articles/s41467-022-35084-w#Sec2).
+This paper was published on ***Nature Communications*** on Dec. 2022. 
+
+You can find the main manuscript [here](https://www.nature.com/articles/s41467-022-35084-w#Sec2).
+
+The Supplymentary Information can be found [here](https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-022-35084-w/MediaObjects/41467_2022_35084_MOESM1_ESM.pdf).
 
 ## Requirements
 
@@ -71,7 +75,6 @@ Two typical examples for the scaling law and dimensionless numbers discovery can
 - The dataset for PDE discovery is at [here](https://drive.google.com/drive/folders/1qERCVtyde1RYCkVQp3g4U21Wu6eq5Yui?usp=share_link).
 
 ## Citations
-
 ```
 @article{xie_data-driven_2022,
   title = {Data-driven discovery of dimensionless numbers and governing laws from scarce measurements},
