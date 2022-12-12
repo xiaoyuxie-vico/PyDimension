@@ -54,7 +54,7 @@ Two typical examples for the scaling law and dimensionless numbers discovery can
 
 4. Sensitive analysis for keyhole example can be found at [scaling_law/sensitive_analysis.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/sensitive_analysis.ipynb).
 
-5. Discover the governing equations for spring-mass-damper systems: [discover_spring_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_spring_clean.ipynb).
+5. Discover the governing equations for spring-mass-damper systems: [discover_spring_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_spring_clean.ipynb). I recommend readers to firstly run this code to understand our method in discovering parametrized differential equations.
 
 5. More differential equation discovery examples are shown in [`PDE_discovery`](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/PDE_discovery). 
 
