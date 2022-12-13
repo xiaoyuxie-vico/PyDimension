@@ -6,7 +6,7 @@
 
 ## Identify knowledge in different levels
 
-The proposed dimensionless learning is a powerful technique to identify scientific knowledge from data at multiple levels: 
+Our proposed method, known as **dimensionless learning** or **dimensionless invariant learning**, is designed to identify and extract scientific insights and patterns from data without being influenced by the scale or size of the input. This enables us to uncover universal scientific knowledge at three different levels:
 
 - **Dimensionless number** at the feature level (physical dimension reduction technique): 
   - **Example**: A well-known dimensionless number can be identified, called the Reynolds number $\mathrm{Re}=\frac{\rho V l}{\mu}$. It is the ratio of inertial force to viscous force in fluid flow and is highly used to distinguish between laminar or turbulent flow.
@@ -88,6 +88,9 @@ Two typical examples for the scaling law and dimensionless numbers discovery can
 3. Discover the Euler equation: [discover_Euler_equ_3cylidner_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_Euler_equ_3cylidner_clean.ipynb).
 
 4. More differential equation discovery examples are shown in [`PDE_discovery`](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/PDE_discovery). 
+
+### Run code online without installing softwares in personal computers
+
 
 ## Dataset
 
