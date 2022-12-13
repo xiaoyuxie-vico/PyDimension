@@ -39,6 +39,8 @@ The Supplymentary Information can be found [here](https://static-content.springe
 
 ## Requirements
 
+### Prepare the requirements
+
 Environments:
 ```
 name: PyDimension
@@ -61,10 +63,14 @@ dependencies:
 
 The detailed pip requirements can be found in [requirements.txt](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/requirements.txt).
 
-Installment:
+Create a conda virtual environment called `PyDimension` and install all the requirements:
 ```
 conda create --name PyDimension --file requirements.txt
 ```
+
+### Run the code online without installing softwares in your personal computers
+
+You can choose [Binder](https://mybinder.org/) to run this repository without installing any python packages in your personal computers. All you need to do is to put this link (https://github.com/xiaoyuxie-vico/PyDimension) into [Binder](https://mybinder.org/) and click `Launch`. Then, you just need to wait for a few minutes to build a Docker for you to run the code.
 
 ## Getting started
 
@@ -88,10 +94,6 @@ Two typical examples for the scaling law and dimensionless numbers discovery can
 3. Discover the Euler equation: [discover_Euler_equ_3cylidner_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_Euler_equ_3cylidner_clean.ipynb).
 
 4. More differential equation discovery examples are shown in [`PDE_discovery`](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/PDE_discovery). 
-
-### Run code online without installing softwares in your personal computers
-
-You can choose [Binder](https://mybinder.org/) to run this repository without installing any python packages in your personal computers. All you need to do is to put this link (https://github.com/xiaoyuxie-vico/PyDimension) into [Binder](https://mybinder.org/) and click `Launch`. Then, you just need to wait for a few minutes to build a Docker for you to run the code.
 
 ## Dataset
 
