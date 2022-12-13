@@ -1,3 +1,8 @@
+dataset:
+    need_download: True
+    data_url: https://drive.google.com/file/d/1E295SWc1JjvrPmLcVyzLmAsV5kaBi69Z/view?usp=share_link
+    dest_path: ../dataset/vorticity-equ.zip
+
 case_id_list:
     v2-Re-50:  
         ref_params:
