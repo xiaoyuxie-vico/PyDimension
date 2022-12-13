@@ -137,7 +137,7 @@ You can choose [Binder](https://mybinder.org/) to run this repository without in
 ```
 
 ## Contact
-If you have any questions or want to contribute to this respository, please contact: 
+If you have any questions, suggestions, or would like to contribute to or collaborate on this repository, please contact:
 - Xiaoyu Xie
 - Northwestern University, Mechanical Engineering
 - xiaoyuxie2020@u.northwestern.edu
