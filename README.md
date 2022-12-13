@@ -6,7 +6,7 @@
 
 ## Identify knowledge in different levels
 
-Our proposed method, known as **dimensionless learning** or **dimensionless invariant learning**, is designed to identify and extract scientific insights and patterns from data without being influenced by the scale or size of the input. This enables us to uncover universal scientific knowledge at three different levels:
+Our proposed method, known as **dimensionless learning**, is designed to identify and extract scientific insights and patterns from data without being influenced by the scale or size of the input. This enables us to uncover universal scientific knowledge at three different levels:
 
 - **Dimensionless number** at the feature level (physical dimension reduction technique): 
   - **Example**: A well-known dimensionless number can be identified, called the Reynolds number $\mathrm{Re}=\frac{\rho V l}{\mu}$. It is the ratio of inertial force to viscous force in fluid flow and is highly used to distinguish between laminar or turbulent flow.
