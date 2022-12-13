@@ -89,8 +89,9 @@ Two typical examples for the scaling law and dimensionless numbers discovery can
 
 4. More differential equation discovery examples are shown in [`PDE_discovery`](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/PDE_discovery). 
 
-### Run code online without installing softwares in personal computers
+### Run code online without installing softwares in your personal computers
 
+You can choose [Binder](https://mybinder.org/) to run this repository without installing any python packages in your personal computers. All you need to do is to put this link (https://github.com/xiaoyuxie-vico/PyDimension) into [Binder](https://mybinder.org/) and click `Launch`. Then, you just need to wait for a few minutes to build a Docker for you to run the code.
 
 ## Dataset
 
