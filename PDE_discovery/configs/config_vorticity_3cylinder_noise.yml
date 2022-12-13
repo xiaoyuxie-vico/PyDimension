@@ -1,7 +1,4 @@
 dataset:
-    need_download: False
-    data_url: https://drive.google.com/file/d/1E295SWc1JjvrPmLcVyzLmAsV5kaBi69Z/view?usp=share_link
-    dest_path: ../dataset/vorticity-equ.zip
     dataset_dir: /mnt/data/dataset/three_cylinder/dataset/vorticity-equ  # change to your local path
 
 case_id_list:

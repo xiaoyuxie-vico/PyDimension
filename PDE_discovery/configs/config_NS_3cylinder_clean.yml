@@ -1,3 +1,6 @@
+dataset:
+    dataset_dir: /mnt/data/dataset/three_cylinder/dataset/NS-equ  # change to your local path
+
 case_id_list:
     v2-Re-100: 
         ref_params:
