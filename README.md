@@ -17,6 +17,8 @@ Our proposed method, namely **dimensionless learning** or scale invariant learni
 
 ## Advantages
 
+Our approach is not purely data-driven, but rather combines fundamental physics principles with state-of-the-art machine learning techniques to solve scientific and engineering problems. By embedding the principle of dimensional invariance into a two-level machine learning scheme, our methodology is able to automatically discover dominant dimensionless numbers and governing laws from measurement data. This approach allows us to reduce high-dimensional parameter spaces and simplify complex processes, while still retaining a physically interpretable and accurate representation of the system. The detailed advantages are shown bwlow:
+
 - **Dimension reduction**: 
   - Dimensionless leanring can reduce a large number of parameters to a few dominant dimensionless numbers.
 - **Better interpretability**: 
