@@ -70,7 +70,7 @@ conda create --name PyDimension --file requirements.txt
 
 ### Run the code online without installing softwares in your personal computers
 
-You can choose [Binder](https://mybinder.org/) to run this repository without installing any python packages in your personal computers. All you need to do is to put this link (https://github.com/xiaoyuxie-vico/PyDimension) into [Binder](https://mybinder.org/) and click `Launch`. Then, you just need to wait for a few minutes to build a Docker for you to run the code.
+You can choose [Binder](https://mybinder.org/) to run this repository without installing any python packages in your personal computers. You can click this [link](https://mybinder.org/v2/gh/xiaoyuxie-vico/PyDimension/HEAD) to modify and run the code.
 
 ## Getting started
 
