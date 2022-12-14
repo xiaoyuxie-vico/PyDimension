@@ -9,7 +9,7 @@
 Our proposed method, namely **dimensionless learning** or scale invariant learning, is designed to identify and extract scientific insights and patterns from data without being influenced by the scale or size of the input. This enables us to uncover universal scientific knowledge at three different levels:
 
 - **Dimensionless number** at the feature level (physical dimension reduction technique): 
-  - **Example**: A well-known dimensionless number can be identified, called the Reynolds number $\mathrm{Re}=\frac{\rho V l}{\mu}$. It is the ratio of inertial force to viscous force in fluid flow and is highly used to distinguish between laminar or turbulent flow.
+  - **Example**: The Reynolds number, denoted as $\mathrm{Re}$, is a well-known dimensionless number that is often used to distinguish between laminar and turbulent flow in fluid dynamics. It is defined as the ratio of inertial forces to viscous forces in a fluid and is given by $\mathrm{Re}=\frac{\rho V l}{\mu}$, where $\rho$ is the density of the fluid, $V$ is the average flow velocity, $l$ is a characteristic length, and $\mu$ is the dynamic viscosity of the fluid. The Reynolds number is interpretable because it represents the ratio of two forces, and it is universal because it is commonly used in fluid dynamics.
 - **Scaling law** at the algebraic equation level
   - **Example**: The complex vapor depression dynamics in 3D printing can be represented as a simple algebraic equation: $e^*=0.12\mathrm{Ke}-0.30$.
 - **Governing equation** at the differential equation level
