@@ -70,7 +70,11 @@ conda create --name PyDimension --file requirements.txt
 
 ### Run the code online without installing softwares in your personal computers
 
-You can choose [Binder](https://mybinder.org/) to run this repository without installing any python packages in your personal computers. You can click this [link](https://mybinder.org/v2/gh/xiaoyuxie-vico/PyDimension/HEAD) to modify and run the code.
+You can use Binder to run this repository without having to install any Python packages on your personal computer. To do this, you can click on this link: https://mybinder.org/v2/gh/xiaoyuxie-vico/PyDimension/HEAD.
+
+Sometimes, you may encounter errors when deploying the code using Binder. If this happens, simply try running the link again and the issue is likely to be resolved.
+
+Additionally, please note that you will need to download the dataset into the dataset folder after you have successfully opened the repository in Binder. The dataset can be found in this Readme document.
 
 ## Getting started
 
