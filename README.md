@@ -8,11 +8,11 @@
 
 Our proposed method, namely **dimensionless learning** or scale invariant learning, is designed to identify and extract scientific insights and patterns from data without being influenced by the scale or size of the input. This enables us to uncover universal scientific knowledge at three different levels:
 
-- **Dimensionless number** at the feature level (physical dimension reduction technique): 
+- **Dimensionless number** at the **feature level** (physical dimension reduction technique): 
   - **Example**: The Reynolds number, denoted as $\mathrm{Re}$, is a well-known dimensionless number that is often used to distinguish between laminar and turbulent flow in fluid dynamics. It is defined as the ratio of inertial forces to viscous forces in a fluid and is given by $\mathrm{Re}=\frac{\rho V l}{\mu}$, where $\rho$ is the density of the fluid, $V$ is the average flow velocity, $l$ is a characteristic length, and $\mu$ is the dynamic viscosity of the fluid. The Reynolds number is interpretable because it represents the ratio of two forces, and it is universal because it is commonly used in fluid dynamics.
-- **Scaling law** at the algebraic equation level
+- **Scaling law** at the **algebraic equation level**
   - **Example**: The vapor depression dynamics in 3D printing is a complex process with many variables, but our approach allows us to represent it using a simple algebraic equation. Using our methodology, the vapor depression dynamics in 3D printing can be expressed as: $e^*=0.12\mathrm{Ke}-0.30$. This equation shows that the vapor depression dynamics can be described by a combination of two dimensionless numbers, $\mathrm{Ke}$ and $e^*$. The value of $e^*$ can be determined by the value of $\mathrm{Ke}$ using this equation, providing a concise and interpretable representation of the complex vapor depression dynamics in 3D printing.
-- **Governing equation** at the differential equation level
+- **Governing equation** at the **differential equation level**
   - **Example**: The well-known Navier-Stokes equation $\frac{\partial \omega}{\partial t}+u\frac{\partial \omega}{\partial x}+v\frac{\partial \omega}{\partial y}=\mathrm{\frac{1}{Re}}(\frac{\partial^2 \omega}{\partial x^2} +\frac{\partial^2 \omega}{\partial y^2})$ can be identified from data by integrating dimensionless learning with SINDy. Note that in our approach, the coefficient used to describe a physical process or system will be a dimensionless number $\mathrm{Re}$ rather than a scalar that changes depending on the specific case. This means that the coefficient will not have any physical dimensions and will be invariant when the length, time, or energy scale of the system varies.
 
 ## Advantages
