@@ -14,5 +14,4 @@ dependencies:
   - ipykernel
   - sympy
   - pyyaml
-  - googledrivedownloader
 prefix: /home/xie/anaconda3/envs/PyDimension
