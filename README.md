@@ -1,4 +1,4 @@
-# Dimensionless learning for data-drievn knowledge discovery
+# Dimensionless learning (dimensional analysis + machine learning) for data-drievn knowledge discovery
 
 <p align="center">
   <img width="200" height="200" src="images/logo.png">
