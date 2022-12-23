@@ -4,6 +4,9 @@
   <img width="200" height="200" src="images/logo.png">
 </p>
 
+## News
+We have an online document for PyDimension, which can be found at [here](https://xiaoyuxie.top/PyDimension-Book/intro.html).
+
 ## Identify knowledge in different levels
 
 Our proposed method, namely **dimensionless learning**, is designed to identify and extract scientific insights and patterns from data without being influenced by the scale or size of the input. This enables us to uncover universal scientific knowledge at three different levels:
