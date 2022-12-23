@@ -96,7 +96,7 @@ Two typical examples for the scaling law and dimensionless numbers discovery can
 
 ### Differential equation and dimensionless number discovery
 
-1. Discover the governing equations for spring-mass-damper systems: [discover_spring_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_spring_clean.ipynb). I recommend readers to firstly run this code to understand our method in discovering parametrized differential equations.
+1. Discover the governing equations for spring-mass-damper systems: [discover_spring_clean.ipynb](https://xiaoyuxie.top/PyDimension-Book/examples/1_discover_spring_clean.html). I recommend readers to firstly run this code to understand our method in discovering parametrized differential equations.
 
 2. Discover the vorticity form NS equations: [discover_vorticity_equ_3cylinder_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_vorticity_equ_3cylinder_clean.ipynb).
 
