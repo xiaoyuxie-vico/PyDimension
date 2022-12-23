@@ -1,22 +1,26 @@
-# Dimensionless learning for data-drievn knowledge discovery
+# Dimensionless learning (dimensional analysis + machine learning) for data-drievn knowledge discovery
 
 <p align="center">
   <img width="200" height="200" src="images/logo.png">
 </p>
 
+## News
+We made an online document for PyDimension, which can be found at [here](https://xiaoyuxie.top/PyDimension-Book/intro.html)!
+
 ## Identify knowledge in different levels
 
-Our proposed method, namely **dimensionless learning** or scale invariant learning, is designed to identify and extract scientific insights and patterns from data without being influenced by the scale or size of the input. This enables us to uncover universal scientific knowledge at three different levels:
+Our proposed method, namely **dimensionless learning**, is designed to identify and extract scientific insights and patterns from data without being influenced by the scale or size of the input. This enables us to uncover universal scientific knowledge at three different levels:
 
-- **Dimensionless number** at the feature level (physical dimension reduction technique): 
+- **Dimensionless number** at the **feature level** (physical dimension reduction technique): 
   - **Example**: The Reynolds number, denoted as $\mathrm{Re}$, is a well-known dimensionless number that is often used to distinguish between laminar and turbulent flow in fluid dynamics. It is defined as the ratio of inertial forces to viscous forces in a fluid and is given by $\mathrm{Re}=\frac{\rho V l}{\mu}$, where $\rho$ is the density of the fluid, $V$ is the average flow velocity, $l$ is a characteristic length, and $\mu$ is the dynamic viscosity of the fluid. The Reynolds number is interpretable because it represents the ratio of two forces, and it is universal because it is commonly used in fluid dynamics.
-- **Scaling law** at the algebraic equation level
+- **Scaling law** at the **algebraic equation level**
   - **Example**: The vapor depression dynamics in 3D printing is a complex process with many variables, but our approach allows us to represent it using a simple algebraic equation. Using our methodology, the vapor depression dynamics in 3D printing can be expressed as: $e^*=0.12\mathrm{Ke}-0.30$. This equation shows that the vapor depression dynamics can be described by a combination of two dimensionless numbers, $\mathrm{Ke}$ and $e^*$. The value of $e^*$ can be determined by the value of $\mathrm{Ke}$ using this equation, providing a concise and interpretable representation of the complex vapor depression dynamics in 3D printing.
-- **Governing equation** at the differential equation level
-  - **Example**: 
-  - The well-known Navier-Stokes equation $\frac{\partial \omega}{\partial t}+u\frac{\partial \omega}{\partial x}+v\frac{\partial \omega}{\partial y}=\mathrm{\frac{1}{Re}}(\frac{\partial^2 \omega}{\partial x^2} +\frac{\partial^2 \omega}{\partial y^2})$ can be identified from data by integrating dimensionless learning with SINDy. Note that in our approach, the coefficient used to describe a physical process or system will be a dimensionless number $\mathrm{Re}$ rather than a scalar that changes depending on the specific case. This means that the coefficient will not have any physical dimensions and will be invariant when the length, time, or energy scale of the system varies.
+- **Governing equation** at the **differential equation level**
+  - **Example**: The well-known Navier-Stokes equation $\frac{\partial \omega}{\partial t}+u\frac{\partial \omega}{\partial x}+v\frac{\partial \omega}{\partial y}=\mathrm{\frac{1}{Re}}(\frac{\partial^2 \omega}{\partial x^2} +\frac{\partial^2 \omega}{\partial y^2})$ can be identified from data by integrating dimensionless learning with SINDy. Note that in our approach, the coefficient used to describe a physical process or system will be a dimensionless number $\mathrm{Re}$ rather than a scalar that changes depending on the specific case. This means that the coefficient will not have any physical dimensions and will be invariant when the length, time, or energy scale of the system varies.
 
 ## Advantages
+
+Our approach is not purely data-driven, but rather combines fundamental physics principles with state-of-the-art machine learning techniques to solve scientific and engineering problems. By embedding the principle of dimensional invariance into a two-level machine learning scheme, our methodology is able to automatically discover dominant dimensionless numbers and governing laws from measurement data. This approach allows us to reduce high-dimensional parameter spaces and simplify complex processes, while still retaining a physically interpretable and accurate representation of the system. The detailed advantages are shown bwlow:
 
 - **Dimension reduction**: 
   - Dimensionless leanring can reduce a large number of parameters to a few dominant dimensionless numbers.
@@ -37,6 +41,9 @@ This paper was published on ***Nature Communications*** on Dec. 2022.
 You can find the main manuscript [here](https://www.nature.com/articles/s41467-022-35084-w#Sec2).
 
 The Supplymentary Information can be found [here](https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-022-35084-w/MediaObjects/41467_2022_35084_MOESM1_ESM.pdf).
+
+## Documentation
+The detailed **online documentation** for PyDimension can be found [here](https://xiaoyuxie.top/PyDimension-Book/intro.html). You can try examples and tutorials interactively without installing any softwares.
 
 ## Requirements
 
@@ -92,7 +99,7 @@ Two typical examples for the scaling law and dimensionless numbers discovery can
 
 ### Differential equation and dimensionless number discovery
 
-1. Discover the governing equations for spring-mass-damper systems: [discover_spring_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_spring_clean.ipynb). I recommend readers to firstly run this code to understand our method in discovering parametrized differential equations.
+1. Discover the governing equations for spring-mass-damper systems: [discover_spring_clean.ipynb](https://xiaoyuxie.top/PyDimension-Book/examples/1_discover_spring_clean.html). I recommend readers to firstly run this code to understand our method in discovering parametrized differential equations.
 
 2. Discover the vorticity form NS equations: [discover_vorticity_equ_3cylinder_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_vorticity_equ_3cylinder_clean.ipynb).
 
@@ -109,19 +116,15 @@ Read more and detailed tutorials on the [documentation](https://xiaoyuxie.top/Py
 
 ## Citations
 ```
-@article{xie_data-driven_2022,
-  title = {Data-driven discovery of dimensionless numbers and governing laws from scarce measurements},
-  volume = {13},
-  url = {https://www.nature.com/articles/s41467-022-35084-w},
-  doi = {10.1038/s41467-022-35084-w},
-  number = {1},
-  urldate = {2022-12-08},
-  journal = {Nature Communications},
-  author = {Xie, Xiaoyu and Samaei, Arash and Guo, Jiachen and Liu, Wing Kam and Gan, Zhengtao},
-  month = dec,
-  year = {2022},
-  pages = {7562},
-  publisher={Nature Publishing Group}，
+@article{xie2022data,
+  title={Data-driven discovery of dimensionless numbers and governing laws from scarce measurements},
+  author={Xie, Xiaoyu and Samaei, Arash and Guo, Jiachen and Liu, Wing Kam and Gan, Zhengtao},
+  journal={Nature Communications},
+  volume={13},
+  number={1},
+  pages={1--11},
+  year={2022},
+  publisher={Nature Publishing Group}
 }
 @article{gan2021universal,
   title={Universal scaling laws of keyhole stability and porosity in 3D printing of metals},
