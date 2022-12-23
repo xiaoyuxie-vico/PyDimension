@@ -5,7 +5,7 @@
 </p>
 
 ## News
-We have an online document for PyDimension, which can be found at [here](https://xiaoyuxie.top/PyDimension-Book/intro.html).
+We made an online document for PyDimension, which can be found at [here](https://xiaoyuxie.top/PyDimension-Book/intro.html)!
 
 ## Identify knowledge in different levels
 
@@ -43,7 +43,7 @@ You can find the main manuscript [here](https://www.nature.com/articles/s41467-0
 The Supplymentary Information can be found [here](https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-022-35084-w/MediaObjects/41467_2022_35084_MOESM1_ESM.pdf).
 
 ## Documentation
-The detailed **online documentation** for PyDimension can be found [here](https://xiaoyuxie.top/PyDimension-Book/intro.html). You can find a more detailed explanation in the documentation.
+The detailed **online documentation** for PyDimension can be found [here](https://xiaoyuxie.top/PyDimension-Book/intro.html). You can try examples and tutorials interactively without installing any softwares.
 
 ## Requirements
 
