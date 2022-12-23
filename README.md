@@ -100,6 +100,8 @@ Two typical examples for the scaling law and dimensionless numbers discovery can
 
 4. More differential equation discovery examples are shown in [`PDE_discovery`](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/PDE_discovery). 
 
+Read more and detailed tutorials on the [documentation](https://xiaoyuxie.top/PyDimension-Book/intro.html#table-of-contents).
+
 ## Dataset
 
 - The dataset for scaling law identification is at [here](https://github.com/xiaoyuxie-vico/PyDimension/tree/main/dataset).
