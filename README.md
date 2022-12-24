@@ -149,6 +149,9 @@ Read more and detailed tutorials on the [documentation](https://xiaoyuxie.top/Py
 }
 ```
 
+## Related papers and contents
+If you are interested in learning about data-driven scientific discovery, I listed some excellent papers and articles that you can use as a starting point. These [resources](https://xiaoyuxie.top/PyDimension-Book/docs/Resources.html#related-papers-and-contents), which can be found in top journals such as *Science* and *Nature*, will give you a strong foundation in data-driven scientific discovery and introduce you to the principles and techniques involved in using data to guide research and uncover new knowledge.
+
 ## Contact
 If you have any questions, suggestions, or would like to contribute to or collaborate on this repository, please contact:
 - Xiaoyu Xie
