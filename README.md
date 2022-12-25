@@ -165,7 +165,6 @@ If you are interested in learning about data-driven scientific discovery, I list
 - **Dimensional homogeneity constrained gene expression programming (DHC-GEP)**: Ma, W., & Zhang, J. (2022). Dimensional homogeneity constrained gene expression programming for discovering governing equations from noisy and scarce data. arXiv preprint arXiv:2211.09679.
 - **AI Feynman**: Udrescu, S. M., & Tegmark, M. (2020). AI Feynman: A physics-inspired method for symbolic regression. *Science Advances*, 6(16), eaay2631.
 - Xu, Z., Zhang, X., Wang, S., & He, G. (2022). Artificial neural network based response surface for data-driven dimensional analysis. ***Journal of Computational Physics***, 459, 111145.
-- Floryan, D., & Graham, M. D. (2022). Data-driven discovery of intrinsic dynamics. ***Nature Machine Intelligence***, 1-8.
 
 ## Contact
 If you have any questions, suggestions, or would like to contribute to or collaborate on this repository, please contact:
