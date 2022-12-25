@@ -160,7 +160,7 @@ If you are interested in learning about data-driven scientific discovery, I list
 ### Dimensional analysis + machine learning
 - **Dimensionless learning**: Xie, X., Samaei, A., Guo, J., Liu, W. K., & Gan, Z. (2022). Data-driven discovery of dimensionless numbers and governing laws from scarce measurements. *Nature Communications*, 13(1), 1-11.
 - **Dimensional invariant Neural Network (DimensionNet)**: Saha, S., Gan, Z., Cheng, L., Gao, J., Kafka, O. L., Xie, X., … & Liu, W. K. (2021). Hierarchical deep learning neural network (HiDeNN): An artificial intelligence (AI) framework for computational science and engineering. *Computer Methods in Applied Mechanics and Engineering*, 373, 113452.
-- **BuckiNet**: Bakarji, J., Callaham, J., Brunton, S. L., & Kutz, J. N. (2022). Dimensionally consistent learning with buckingham pi. arXiv preprint arXiv:2202.04643.
+- **BuckiNet**: Bakarji, J., Callaham, J., Brunton, S.L. et al. Dimensionally consistent learning with Buckingham Pi. *Nature Computational Science* 2, 834–844 (2022).
 - **Dimensionless machine learning**: Villar, S., Yao, W., Hogg, D. W., Blum-Smith, B., & Dumitrascu, B. (2022). Dimensionless machine learning: Imposing exact units equivariance. arXiv preprint arXiv:2204.00887.
 - **Dimensional homogeneity constrained gene expression programming (DHC-GEP)**: Ma, W., & Zhang, J. (2022). Dimensional homogeneity constrained gene expression programming for discovering governing equations from noisy and scarce data. arXiv preprint arXiv:2211.09679.
 - **AI Feynman**: Udrescu, S. M., & Tegmark, M. (2020). AI Feynman: A physics-inspired method for symbolic regression. *Science Advances*, 6(16), eaay2631.
