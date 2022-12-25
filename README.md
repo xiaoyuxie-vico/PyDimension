@@ -89,17 +89,22 @@ Additionally, please note that you will need to download the dataset into the da
 ### Scaling law and dimensionless number discovery
 
 1. Scaling law and dimenionless numbers dicsovery
-Two typical examples for the scaling law and dimensionless numbers discovery can be found in [scaling_law/keyhole_example_pattern_search.py](https://xiaoyuxie.top/PyDimension-Book/examples/pattern_search.html) and [scaling_law/keyhole_example_gradient_descent.ipynb](https://xiaoyuxie.top/PyDimension-Book/examples/gradient_descent.html). 
+Two typical examples for the scaling law and dimensionless numbers discovery can be found in [Tutorial 1.1: Pattern search-based two level optimization
+](https://xiaoyuxie.top/PyDimension-Book/examples/pattern_search.html) and [Tutorial 1.2: Gradient descent-based two level optimization
+](https://xiaoyuxie.top/PyDimension-Book/examples/gradient_descent.html). 
 
-2. Generalization comparison with popular machine learning algorithms is shown in [scaling_law/scaling_law/cross_materials.ipynb](https://xiaoyuxie.top/PyDimension-Book/examples/cross_materials.html) and [scaling_law/cross_scales.ipynb](https://xiaoyuxie.top/PyDimension-Book/examples/cross_scales.html).
+2. Generalization comparison with popular machine learning algorithms is shown in [Tutorial 1.3: Cross material experiments
+](https://xiaoyuxie.top/PyDimension-Book/examples/cross_materials.html) and [Tutorial 1.4: Cross scales experiments for pip flow
+](https://xiaoyuxie.top/PyDimension-Book/examples/cross_scales.html).
 
 3. A simplified version for pattern search-based two-level optimizaiton can be found at [scaling_law/utils/solver.py](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/scaling_law/utils/solver.py).
 
-4. Sensitive analysis for keyhole example can be found at [scaling_law/sensitive_analysis.ipynb](https://xiaoyuxie.top/PyDimension-Book/examples/sensitive_analysis.html).
+4. Sensitive analysis for keyhole example can be found at [Tutorial 1.6: Sensitivity analysis](https://xiaoyuxie.top/PyDimension-Book/examples/sensitive_analysis.html).
 
 ### Differential equation and dimensionless number discovery
 
-1. Discover the governing equations for spring-mass-damper systems: [discover_spring_clean.ipynb](https://xiaoyuxie.top/PyDimension-Book/examples/discover_spring_clean.html). I recommend readers to firstly run this code to understand our method in discovering parametrized differential equations.
+1. Discover the governing equations for spring-mass-damper systems: [Tutorial 2.1: ODEs discovery in spring-mass-damper systems!
+](https://xiaoyuxie.top/PyDimension-Book/examples/discover_spring_clean.html). I recommend readers to firstly run this code to understand our method in discovering parametrized differential equations.
 
 2. Discover the vorticity form NS equations: [discover_vorticity_equ_3cylinder_clean.ipynb](https://github.com/xiaoyuxie-vico/PyDimension/blob/main/PDE_discovery/discover_vorticity_equ_3cylinder_clean.ipynb).
 
