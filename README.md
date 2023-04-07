@@ -5,7 +5,10 @@
 </p>
 
 ## News
-We made an online document for PyDimension, which can be found at [here](https://xiaoyuxie.top/PyDimension-Book/intro.html)!
+- Video talks: 
+  - [03/30/2023] - [talk recording](https://www.youtube.com/watch?v=b3y4ksYzcig) on CMU-Scientific Machine Learning Webinar;
+  - [01/27/2023] - [talk recording](https://www.youtube.com/watch?v=R6pJleczQr4&t=55s) on Brown University-Math + Machine Learning + X;
+- [12/2022] We made an online document for PyDimension, which can be found at [here](https://xiaoyuxie.top/PyDimension-Book/intro.html)!
 
 ## Identify knowledge in different levels
 
