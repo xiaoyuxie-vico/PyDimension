@@ -166,7 +166,7 @@ If you are interested in learning about data-driven scientific discovery, I list
 - **BuckiNet**: Bakarji, J., Callaham, J., Brunton, S.L. et al. Dimensionally consistent learning with Buckingham Pi. ***Nature Computational Science***, 2, 834–844 (2022).
 - **Dimensionless machine learning**: Villar, S., Yao, W., Hogg, D. W., Blum-Smith, B., & Dumitrascu, B. (2022). Dimensionless machine learning: Imposing exact units equivariance. arXiv preprint arXiv:2204.00887.
 - **Dimensional homogeneity constrained gene expression programming (DHC-GEP)**: Ma, W., & Zhang, J. (2022). Dimensional homogeneity constrained gene expression programming for discovering governing equations from noisy and scarce data. arXiv preprint arXiv:2211.09679.
-- **AI Feynman**: Udrescu, S. M., & Tegmark, M. (2020). AI Feynman: A physics-inspired method for symbolic regression. *Science Advances*, 6(16), eaay2631.
+- **AI Feynman**: Udrescu, S. M., & Tegmark, M. (2020). AI Feynman: A physics-inspired method for symbolic regression. ***Science Advances***, 6(16), eaay2631.
 - Xu, Z., Zhang, X., Wang, S., & He, G. (2022). Artificial neural network based response surface for data-driven dimensional analysis. ***Journal of Computational Physics***, 459, 111145.
 
 ## Contact
