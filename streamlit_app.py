@@ -178,7 +178,7 @@ def show_home_page():
     # Show logo centered above the title
     logo_col_left, logo_col_center, logo_col_right = st.columns([1, 2, 1])
     with logo_col_center:
-        st.image("docs/media/logo.png", use_container_width=True)
+        st.image("https://i.postimg.cc/Gt8Cznt4/logo.png", use_container_width=True)
     
     st.markdown("## Welcome to PyDimension 2.0")
     st.markdown("### A Comprehensive Tool for Discovering Dimensionless Relationships")
