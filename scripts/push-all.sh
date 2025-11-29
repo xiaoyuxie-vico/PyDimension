@@ -213,18 +213,40 @@ fi
 # Restore clean README locally and ensure GitHub has it too
 echo ""
 echo "📝 Ensuring clean README.md for GitHub (removing YAML frontmatter)..."
-./scripts/restore-github-readme.sh
-rm -f README.md.backup
 
-# Verify README is clean (no YAML)
-if head -n 1 README.md | grep -q "^---$"; then
-    echo "⚠️  Warning: README.md still has YAML frontmatter after restore attempt"
+# Get the current branch name (in case we're still on a temp branch)
+CURRENT_BRANCH_NAME=$(git branch --show-current)
+
+# Make sure we're on the main branch
+if [ "$CURRENT_BRANCH_NAME" != "main" ] && [ "$CURRENT_BRANCH_NAME" != "$CURRENT_BRANCH" ]; then
+    git checkout "$CURRENT_BRANCH" 2>/dev/null || true
+    CURRENT_BRANCH_NAME="$CURRENT_BRANCH"
+fi
+
+# Restore README from HEAD (the committed version, which should be clean)
+git checkout HEAD -- README.md 2>/dev/null || true
+
+# Now check and remove YAML if it exists
+if head -n 1 README.md 2>/dev/null | grep -q "^---$"; then
+    ./scripts/restore-github-readme.sh
+    rm -f README.md.backup
+fi
+
+# Verify README is clean (no YAML) - force remove if still present
+if head -n 1 README.md 2>/dev/null | grep -q "^---$"; then
+    echo "⚠️  Warning: README.md still has YAML frontmatter, force-removing..."
     # Force remove YAML
     YAML_END=$(grep -n "^---$" README.md | sed -n '2p' | cut -d: -f1)
     if [ -n "$YAML_END" ]; then
         sed "1,$((YAML_END+1))d" README.md > README.md.tmp
         mv README.md.tmp README.md
         echo "✅ Force-removed YAML frontmatter"
+    else
+        # If we can't find the end, try a different approach
+        # Remove everything from start until we find a line starting with #
+        sed -n '/^#/,$p' README.md > README.md.tmp
+        mv README.md.tmp README.md
+        echo "✅ Force-removed YAML frontmatter (alternative method)"
     fi
 fi
 
