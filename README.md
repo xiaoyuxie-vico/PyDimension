@@ -13,6 +13,11 @@ pinned: false
 
 A modular Python package for discovering **dimensionless relationships** (dimensionless numbers and scaling laws) in physical systems using **data and machine learning**.
 
+## 🚀 Try It Online
+
+- **🌐 [Streamlit Web App](https://huggingface.co/spaces/xiaoyuxie-vico/PyDimension)** - Run PyDimension in your browser (no installation required)
+- **📦 [GitHub Repository](https://github.com/xiaoyuxie-vico/PyDimension)** - Source code, documentation, and examples
+
 > **What is this?** PyDimension takes experimental or synthetic data with physical units and automatically finds a small set of meaningful **dimensionless groups** and **scaling laws** that explain the system.
 > It is the production-ready, modular implementation of the method from the Nature Communications paper *“Data-driven discovery of dimensionless numbers and governing laws from scarce measurements”*.
 
