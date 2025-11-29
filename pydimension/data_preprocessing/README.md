@@ -555,8 +555,8 @@ python preprocess_data.py \
     --dimension_matrix_file output/data/dimension_matrix_synthetic.csv \
     --plot
 
-# Step 3: Dimensional analysis
-python analyze_dimensions.py --config pydimension/configs/config_synthetic.json --save-normalized-lg
+# Step 3: Dimensional analysis (normalized lg data saved by default)
+python analyze_dimensions.py --config pydimension/configs/config_synthetic.json
 
 # Step 4: Dimensional filtering (outputs suggested_dominant_count.json)
 python filter_constraints.py --config pydimension/configs/config_synthetic.json

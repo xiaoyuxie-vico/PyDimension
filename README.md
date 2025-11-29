@@ -41,7 +41,6 @@ If you can provide a table of measurements (inputs with units and outputs), PyDi
 
 **Journal:** Nature Communications, Volume 13, Article 7569 (2022)
 
-**Abstract:** Dimensionless numbers and scaling laws provide elegant insights into the characteristic properties of physical systems. Classical dimensional analysis and similitude theory fail to identify a set of unique dimensionless numbers for a highly multi-variable system with incomplete governing equations. This paper introduces a mechanistic data-driven approach that embeds the principle of dimensional invariance into a two-level machine learning scheme to automatically discover dominant dimensionless numbers and governing laws (including scaling laws and differential equations) from scarce measurement data. The proposed methodology, called dimensionless learning, is a physics-based dimension reduction technique. It can reduce high-dimensional parameter spaces to descriptions involving only a few physically interpretable dimensionless parameters, greatly simplifying complex process design and system optimization. We demonstrate the algorithm by solving several challenging engineering problems with noisy experimental measurements (not synthetic data) collected from the literature. Examples include turbulent Rayleigh-Bénard convection, vapor depression dynamics in laser melting of metals, and porosity formation in 3D printing. Lastly, we show that the proposed approach can identify dimensionally homogeneous differential equations with dimensionless number(s) by leveraging sparsity-promoting techniques.
 
 **Links:**
 - [Main manuscript](https://www.nature.com/articles/s41467-022-35084-w) (Nature Communications)
@@ -203,8 +202,8 @@ python generate_data.py --config pydimension/configs/config_synthetic.json --plo
 # 2. Preprocess
 python preprocess_data.py --config pydimension/configs/config_synthetic.json --plot
 
-# 3. Dimensional analysis (save normalized lg data)
-python analyze_dimensions.py --config pydimension/configs/config_synthetic.json --save-normalized-lg --plot
+# 3. Dimensional analysis (normalized lg data saved by default)
+python analyze_dimensions.py --config pydimension/configs/config_synthetic.json --plot
 
 # 4. Dimensional filtering (outputs suggested_dominant_count.json)
 python filter_constraints.py --config pydimension/configs/config_synthetic.json --plot
