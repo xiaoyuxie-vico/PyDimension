@@ -25,15 +25,18 @@ if head -n 1 README.md | grep -q "^---$"; then
     exit 0
 fi
 
-# Create backup
-cp README.md README.md.backup
+# Create temporary backup for processing
+TEMP_BACKUP="README.md.backup"
+cp README.md "$TEMP_BACKUP"
 
 # Prepend YAML to README
 echo "$HF_YAML" > README.md.tmp
 echo "" >> README.md.tmp
-cat README.md.backup >> README.md.tmp
+cat "$TEMP_BACKUP" >> README.md.tmp
 mv README.md.tmp README.md
 
+# Clean up temporary backup
+rm -f "$TEMP_BACKUP"
+
 echo "✅ Added YAML frontmatter to README.md for Hugging Face Spaces"
-echo "   Backup saved as README.md.backup"
 

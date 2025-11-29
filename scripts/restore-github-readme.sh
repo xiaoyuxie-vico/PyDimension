@@ -20,12 +20,15 @@ if [ -z "$YAML_END" ]; then
     exit 1
 fi
 
-# Create backup
-cp README.md README.md.backup
+# Create temporary backup for processing
+TEMP_BACKUP="README.md.backup"
+cp README.md "$TEMP_BACKUP"
 
 # Remove YAML frontmatter (lines 1 to YAML_END+1 to include blank line)
-sed "1,$((YAML_END+1))d" README.md.backup > README.md
+sed "1,$((YAML_END+1))d" "$TEMP_BACKUP" > README.md
+
+# Clean up temporary backup
+rm -f "$TEMP_BACKUP"
 
 echo "✅ Removed YAML frontmatter from README.md"
-echo "   Backup saved as README.md.backup"
 

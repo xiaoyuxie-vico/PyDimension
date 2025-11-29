@@ -1,14 +1,3 @@
----
-title: PyDimension
-emoji: 🔬
-colorFrom: blue
-colorTo: purple
-sdk: streamlit
-sdk_version: "1.28.0"
-app_file: streamlit_app.py
-pinned: false
----
-
 # PyDimension
 
 A modular Python package for discovering **dimensionless relationships** (dimensionless numbers and scaling laws) in physical systems using **data and machine learning**.
