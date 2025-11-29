@@ -1,14 +1,14 @@
-# PyDimension 2.0
+# PyDimension
 
 A modular Python package for discovering **dimensionless relationships** (dimensionless numbers and scaling laws) in physical systems using **data and machine learning**.
 
-> **What is this?** PyDimension 2.0 takes experimental or synthetic data with physical units and automatically finds a small set of meaningful **dimensionless groups** and **scaling laws** that explain the system.
+> **What is this?** PyDimension takes experimental or synthetic data with physical units and automatically finds a small set of meaningful **dimensionless groups** and **scaling laws** that explain the system.
 > It is the production-ready, modular implementation of the method from the Nature Communications paper *“Data-driven discovery of dimensionless numbers and governing laws from scarce measurements”*.
 
 
 ## Relationship to PyDimension v1.0
 
-- **This branch (`main`) – PyDimension 2.0**  
+- **This branch (`main`) – PyDimension**  
   Modern, modular Python package (`pydimension/*`) with command-line tools, Python API, and a Streamlit web app for running full pipelines.
 
 - **Legacy research code (`v1.0` branch) – PyDimension v1.0**  
@@ -47,7 +47,7 @@ If you can provide a table of measurements (inputs with units and outputs), PyDi
 - [Main manuscript](https://www.nature.com/articles/s41467-022-35084-w) (Nature Communications)
 - [Supplementary Information](https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-022-35084-w/MediaObjects/41467_2022_35084_MOESM1_ESM.pdf) (PDF)
 
-**Note:** This repository (PyDimension 2.0) is a refactored, production-ready implementation of the methodology described in the paper. The original research code and notebooks used in the paper are preserved on the [`v1.0` branch](https://github.com/xiaoyuxie-vico/PyDimension/tree/v1.0).
+**Note:** This repository (PyDimension) is a refactored, production-ready implementation of the methodology described in the paper. The original research code and notebooks used in the paper are preserved on the [`v1.0` branch](https://github.com/xiaoyuxie-vico/PyDimension/tree/v1.0).
 
 ### Video Talks
 
@@ -65,8 +65,8 @@ If you can provide a table of measurements (inputs with units and outputs), PyDi
 
 ```bash
 # Clone the repository
-git clone https://github.com/xiaoyuxie-vico/PyDimension2.0.git
-cd PyDimension2.0
+git clone https://github.com/xiaoyuxie-vico/PyDimension.git
+cd PyDimension
 
 # Install in editable mode (recommended for development)
 pip install -e .
@@ -92,7 +92,7 @@ You can use **Conda**, **Mamba**, or **Micromamba** to create the environment. A
 **Option 1: Micromamba (Fastest, Recommended)**
 ```bash
 micromamba env create -f environment.yml
-micromamba activate pydimension2.0
+micromamba activate pydimension
 python test_environment.py
 python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
 ```
@@ -100,7 +100,7 @@ python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
 **Option 2: Mamba (Faster than Conda)**
 ```bash
 mamba env create -f environment.yml
-conda activate pydimension2.0  # Use conda activate even with mamba
+conda activate pydimension  # Use conda activate even with mamba
 python test_environment.py
 python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
 ```
@@ -108,7 +108,7 @@ python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
 **Option 3: Conda (Standard)**
 ```bash
 conda env create -f environment.yml
-conda activate pydimension2.0
+conda activate pydimension
 python test_environment.py
 python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
 ```
@@ -139,7 +139,7 @@ See [docs/STREAMLIT_README.md](docs/STREAMLIT_README.md) for details.
 
 ## Overview
 
-PyDimension 2.0 discovers dimensionless scaling laws from experimental or synthetic data through a modular pipeline:
+PyDimension discovers dimensionless scaling laws from experimental or synthetic data through a modular pipeline:
 
 1. **Data Generation** - Generate synthetic datasets with known relationships
 2. **Data Preprocessing** - Load, clean, and normalize data
@@ -157,7 +157,7 @@ PyDimension 2.0 discovers dimensionless scaling laws from experimental or synthe
 ## Package Structure
 
 ```
-PyDimension2.0/
+PyDimension/
 ├── pydimension/
 │   ├── data_generation/          # Module 1: Synthetic data generation
 │   ├── data_preprocessing/        # Module 2: Data preprocessing

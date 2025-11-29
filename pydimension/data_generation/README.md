@@ -577,7 +577,7 @@ The data generation process follows these steps:
 - For ndim>1: Need at least ndim coefficients
 
 ### Import errors
-- Make sure you're in the PyDimension2.0 directory or have installed the package
+- Make sure you're in the PyDimension directory or have installed the package
 - Check that all dependencies are installed: `pip install -r requirements.txt`
 
 ## Integration with Other Modules

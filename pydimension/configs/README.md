@@ -1,8 +1,8 @@
 # Configuration Files
 
-**All configuration files for PyDimension 2.0 should be maintained in this directory** (`pydimension/configs/`).
+**All configuration files for PyDimension should be maintained in this directory** (`pydimension/configs/`).
 
-This directory contains example configuration files for PyDimension 2.0 modules.
+This directory contains example configuration files for PyDimension modules.
 
 ## Unified Config File Structure
 

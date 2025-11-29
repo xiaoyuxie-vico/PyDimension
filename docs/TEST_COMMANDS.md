@@ -5,7 +5,7 @@
 ## Complete Pipeline
 
 Activate the environment:
-`micromamba activate pydimension2.0`
+`micromamba activate pydimension`
 
 ### Automated (Recommended)
 
