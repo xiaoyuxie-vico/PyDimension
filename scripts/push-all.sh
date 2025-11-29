@@ -236,7 +236,6 @@ if git remote get-url space >/dev/null 2>&1; then
     elif [ "$PUSH_FAILED" != "true" ]; then
         # Push succeeded
         echo "✅ Successfully pushed to Hugging Face Spaces"
-        echo "✅ Successfully pushed to Hugging Face Spaces"
         
         # If we created a temp commit, we can optionally keep it or reset
         # For now, we'll keep it since it's needed for HF Spaces
@@ -257,20 +256,47 @@ else
     echo "   Add it with: git remote add space https://huggingface.co/spaces/xiaoyuxie-vico/PyDimension"
 fi
 
-# Restore clean README locally (remove YAML if we added it)
-if [ "$README_HAD_YAML" = false ]; then
-    echo ""
-    echo "📝 Restoring clean README.md locally (removing YAML frontmatter)..."
-    ./scripts/restore-github-readme.sh
-    rm -f README.md.backup
-    echo "✅ Local README.md is now clean (no YAML frontmatter)"
-else
-    # Clean up backup file
-    rm -f "$README_BACKUP"
+# Restore clean README locally and ensure GitHub has it too
+echo ""
+echo "📝 Ensuring clean README.md for GitHub (removing YAML frontmatter)..."
+./scripts/restore-github-readme.sh
+rm -f README.md.backup
+
+# Verify README is clean (no YAML)
+if head -n 1 README.md | grep -q "^---$"; then
+    echo "⚠️  Warning: README.md still has YAML frontmatter after restore attempt"
+    # Force remove YAML
+    YAML_END=$(grep -n "^---$" README.md | sed -n '2p' | cut -d: -f1)
+    if [ -n "$YAML_END" ]; then
+        sed "1,$((YAML_END+1))d" README.md > README.md.tmp
+        mv README.md.tmp README.md
+        echo "✅ Force-removed YAML frontmatter"
+    fi
 fi
 
+# Commit and push clean README to GitHub if it changed
+if ! git diff --quiet README.md 2>/dev/null; then
+    echo "📝 Committing clean README.md (no YAML) to GitHub..."
+    git add README.md
+    git commit -m "Keep README clean for GitHub (remove YAML frontmatter)" || true
+    
+    if git remote get-url origin >/dev/null 2>&1; then
+        echo "📦 Pushing clean README to GitHub..."
+        if git push origin "$CURRENT_BRANCH"; then
+            echo "✅ Successfully pushed clean README to GitHub"
+        else
+            echo "⚠️  Warning: Failed to push clean README to GitHub (but local is clean)"
+        fi
+    fi
+fi
+
+# Clean up backup file
+rm -f "$README_BACKUP"
+
+echo ""
+echo "✅ Local README.md is now clean (no YAML frontmatter)"
 echo ""
 echo "🎉 All done! Your changes are now live on both platforms."
-echo "   - GitHub: Clean README (no YAML)"
-echo "   - Hugging Face Spaces: README with YAML frontmatter for configuration"
+echo "   - GitHub: Clean README (no YAML) ✅"
+echo "   - Hugging Face Spaces: README with YAML frontmatter for configuration ✅"
 
