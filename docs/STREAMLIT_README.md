@@ -128,5 +128,5 @@ streamlit run streamlit_app.py --server.port 8502
 ## Next Steps
 
 - [USAGE.md](USAGE.md) - Command-line and Python API usage
-- [TEST_COMMANDS.md](TEST_COMMANDS.md) - Test commands reference
+- [README.md](../README.md#workflow) - Workflow and command examples
 - [README.md](../README.md) - Project overview

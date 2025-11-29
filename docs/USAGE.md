@@ -114,5 +114,5 @@ preprocessor.save_results()
 
 - [SETUP.md](SETUP.md) - Installation guide
 - [TESTING.md](TESTING.md) - Testing guide
-- [TEST_COMMANDS.md](TEST_COMMANDS.md) - Command reference
+- [README.md](../README.md#workflow) - Workflow and command examples
 - [README.md](../README.md) - Project overview

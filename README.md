@@ -190,34 +190,68 @@ PyDimension/
 
 ## Workflow
 
+**Note**: Optimization Discovery automatically uses the suggested dominant count from Dimensional Filtering. Run Dimensional Filtering first.
+
 ### Automated Pipeline (Recommended)
 
 ```bash
+# Run all modules with visualization
 python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
+
+# Without visualization
+python run_pipeline.py --config pydimension/configs/config_synthetic.json
+
+# Custom output directory
+python run_pipeline.py --config pydimension/configs/config_synthetic.json --output_dir my_output --plot
+
+# Continue on error
+python run_pipeline.py --config pydimension/configs/config_synthetic.json --continue-on-error
+
+# Skip specific steps
+python run_pipeline.py --config pydimension/configs/config_synthetic.json --skip data_generation --skip data_preprocessing
+
+# Stop after a specific step
+python run_pipeline.py --config pydimension/configs/config_synthetic.json --stop-after dimensional_analysis
 ```
 
 This runs all 5 modules sequentially with automatic data flow between steps.
 
 ### Manual Step-by-Step
 
+#### Synthetic Data Example
+
 ```bash
-# 1. Generate data
+# Step 1: Generate data
 python generate_data.py --config pydimension/configs/config_synthetic.json --plot
 
-# 2. Preprocess
+# Step 2: Preprocess data
 python preprocess_data.py --config pydimension/configs/config_synthetic.json --plot
 
-# 3. Dimensional analysis (normalized lg data saved by default)
+# Step 3: Dimensional analysis (normalized lg data saved by default)
 python analyze_dimensions.py --config pydimension/configs/config_synthetic.json --plot
 
-# 4. Dimensional filtering (outputs suggested_dominant_count.json)
+# Step 4: Dimensional filtering (outputs suggested_dominant_count.json)
 python filter_constraints.py --config pydimension/configs/config_synthetic.json --plot
 
-# 5. Optimization discovery (uses suggested count from step 4)
+# Step 5: Optimization discovery (automatically uses suggested count from step 4)
 python optimize_discovery.py --config pydimension/configs/config_synthetic.json --plot
 ```
 
-See [docs/TEST_COMMANDS.md](docs/TEST_COMMANDS.md) for more examples.
+#### Keyhole Problem Example
+
+```bash
+# Step 1: Preprocess data (using keyhole dataset)
+python preprocess_data.py --config pydimension/configs/config_keyhole.json --plot
+
+# Step 2: Dimensional analysis
+python analyze_dimensions.py --config pydimension/configs/config_keyhole.json --plot
+
+# Step 3: Dimensional filtering
+python filter_constraints.py --config pydimension/configs/config_keyhole.json --plot
+
+# Step 4: Optimization discovery
+python optimize_discovery.py --config pydimension/configs/config_keyhole.json --plot
+```
 
 ## Configuration
 
@@ -274,7 +308,6 @@ generator.save_datasets()
 - **[docs/TESTING.md](docs/TESTING.md)** - Testing guide and verification
 - **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** - Development workflow and code checking
 - **[docs/WORKFLOW.md](docs/WORKFLOW.md)** - Quick push workflow and deployment shortcuts
-- **[docs/TEST_COMMANDS.md](docs/TEST_COMMANDS.md)** - Quick command reference
 - **[docs/STREAMLIT_README.md](docs/STREAMLIT_README.md)** - Web interface guide
 - **[docs/HUGGINGFACE_DEPLOY.md](docs/HUGGINGFACE_DEPLOY.md)** - Hugging Face Spaces deployment guide
 - **Module READMEs**: Detailed docs in `pydimension/*/README.md`

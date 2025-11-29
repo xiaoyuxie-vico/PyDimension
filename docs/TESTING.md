@@ -119,7 +119,7 @@ pip install -e . --force-reinstall  # Entry points need reinstall
 - `test_package_installation.py` - Full installation verification
 - `test_environment.py` - Environment and dependency check
 
-See [TEST_COMMANDS.md](TEST_COMMANDS.md) for module-specific test commands.
+See the [Workflow section](../README.md#workflow) in README.md for module-specific test commands and examples.
 
 ## Next Steps
 
