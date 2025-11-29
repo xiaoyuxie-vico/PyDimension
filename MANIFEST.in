@@ -1,0 +1,18 @@
+# Include configuration files
+include pydimension/configs/*.json
+include pydimension/configs/*.md
+
+# Include README and documentation
+include README.md
+include docs/*.md
+
+# Include requirements and environment files
+include requirements.txt
+include environment.yml
+
+# Include license if it exists
+# include LICENSE
+
+# Include test files
+# include test_environment.py
+

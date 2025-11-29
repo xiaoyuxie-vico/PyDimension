@@ -1,0 +1,75 @@
+{
+  "DATA_GENERATION": {
+    "enabled": false
+  },
+  "DATA_PREPROCESSING": {
+    "enabled": true,
+    "input_file": "dataset/keyhole/dataset_keyhole.csv",
+    "input_variables": ["etaP", "Vs", "r0", "alpha", "rho", "cp", "Tl-T0"],
+    "output_variables": ["e*"],
+    "dimension_matrix_file": "dataset/keyhole/dimension_matrix.csv",
+    "variable_units": null,
+    "normalize": true
+  },
+  "DIMENSIONAL_ANALYSIS": {
+    "enabled": true,
+    "normalized_data_file": null,
+    "dimension_matrix_file": null,
+    "normalize_basis": true,
+    "save_normalized_lg": true
+  },
+  "CONSTRAINT_FILTERING": {
+    "enabled": true,
+    "input_file": null,
+    "run_pca": true,
+    "run_sir": true,
+    "pca_threshold": 0.6,
+    "n_sir_slices": 10,
+    "n_sir_directions": 3
+  },
+  "OPTIMIZATION_DISCOVERY": {
+    "enabled": true,
+    "input_file": null,
+    "basis_vectors_file": null,
+    "num_linear": null,
+    "num_hidden_layers": 4,
+    "num_hidden_nodes": 10,
+    "random_seed": 49,
+    "epochs": 1000,
+    "learning_rate": 0.001,
+    "train_percent": 0.8,
+    "num_ensembles": 5,
+    "use_fixed_gamma": false,
+    "use_gamma_regularization": true,
+    "gamma_reg_strength": 0.03,
+    "gamma_reg_resolution": "half-integers"
+  },
+  "OUTPUT": {
+    "output_dir": "output",
+    "data_dir": "data",
+    "figures_dir": "figures",
+    "results_dir": "results",
+    "logs_dir": "logs"
+  },
+  "DATA_PREPROCESSING_OUTPUT": {
+    "normalized_data_filename": "normalized_data.csv",
+    "dimension_matrix_filename": "dimension_matrix.csv"
+  },
+  "DIMENSIONAL_ANALYSIS_OUTPUT": {
+    "afterDA_data_filename": "afterDA_data.csv",
+    "basis_vectors_filename": "basis_vectors.csv",
+    "normalized_lg_data_filename": "normalized_lg_afterDA_data.csv",
+    "plot_filename": "dimensional_analysis_plots.png"
+  },
+  "CONSTRAINT_FILTERING_OUTPUT": {
+    "pca_results_filename": "pca_results.json",
+    "sir_results_filename": "sir_results.json",
+    "plot_filename": "constraint_filtering_plots.png",
+    "suggested_count_filename": "suggested_dominant_count.json"
+  },
+  "OPTIMIZATION_DISCOVERY_OUTPUT": {
+    "model_results_filename": "optimization_discovery_results.json",
+    "plot_filename": "optimization_discovery_plots.png"
+  }
+}
+
