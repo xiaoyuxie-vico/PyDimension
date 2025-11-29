@@ -1,6 +1,6 @@
-# PyDimension 2.0 Setup Guide
+# PyDimension Setup Guide
 
-Complete guide for installing and setting up PyDimension 2.0.
+Complete guide for installing and setting up PyDimension.
 
 ## Prerequisites
 
@@ -13,8 +13,8 @@ Complete guide for installing and setting up PyDimension 2.0.
 
 **For Development (Editable Install):**
 ```bash
-git clone https://github.com/xiaoyuxie-vico/PyDimension2.0.git
-cd PyDimension2.0
+git clone https://github.com/xiaoyuxie-vico/PyDimension.git
+cd PyDimension
 pip install -e .  # Changes are immediately available
 ```
 
@@ -34,19 +34,19 @@ pydimension-generate --help
 **Option A: Micromamba (Fastest)**
 ```bash
 micromamba env create -f environment.yml
-micromamba activate pydimension2.0
+micromamba activate pydimension
 ```
 
 **Option B: Mamba**
 ```bash
 mamba env create -f environment.yml
-conda activate pydimension2.0
+conda activate pydimension
 ```
 
 **Option C: Conda**
 ```bash
 conda env create -f environment.yml
-conda activate pydimension2.0
+conda activate pydimension
 ```
 
 ### Method 3: pip with Virtual Environment
@@ -124,7 +124,7 @@ pip install torch --index-url https://download.pytorch.org/whl/cpu
 ```
 
 **Import Errors:**
-- Ensure you're in the correct environment: `conda activate pydimension2.0`
+- Ensure you're in the correct environment: `conda activate pydimension`
 - Reinstall if needed: `pip install -e . --force-reinstall`
 
 **Command-Line Tools Not Found:**

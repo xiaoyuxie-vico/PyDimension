@@ -1,6 +1,6 @@
 # Streamlit Web Application
 
-Interactive web interface for PyDimension 2.0.
+Interactive web interface for PyDimension.
 
 ## Quick Start
 

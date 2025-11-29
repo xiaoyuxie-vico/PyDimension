@@ -1,4 +1,4 @@
-# Using PyDimension 2.0
+# Using PyDimension
 
 Quick reference for using the package.
 

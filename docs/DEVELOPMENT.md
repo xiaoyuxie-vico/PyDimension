@@ -136,7 +136,7 @@ print(f'Configs: {list(config_dir.glob(\"*.json\"))}')
 # Verify package works from anywhere
 cd /tmp
 python -c "import pydimension; print('✅ Accessible')"
-cd /Users/xie/projects/PyDimension2.0
+cd /Users/xie/projects/PyDimension
 ```
 
 ## When to Reinstall

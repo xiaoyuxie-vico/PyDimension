@@ -42,7 +42,7 @@ setup(
     long_description_content_type="text/markdown",
     author="PyDimension Team",
     author_email="pydimension@example.com",
-    url="https://github.com/xiaoyuxie-vico/PyDimension2.0",
+    url="https://github.com/xiaoyuxie-vico/PyDimension",
     packages=find_packages(exclude=["tests", "tests.*", "*.tests", "*.tests.*"]),
     package_data={
         "pydimension": [
@@ -87,9 +87,9 @@ setup(
     ],
     keywords="dimensional analysis, dimensionless groups, machine learning, physics, scaling laws",
     project_urls={
-        "Bug Reports": "https://github.com/xiaoyuxie-vico/PyDimension2.0/issues",
-        "Source": "https://github.com/xiaoyuxie-vico/PyDimension2.0",
-        "Documentation": "https://github.com/xiaoyuxie-vico/PyDimension2.0#readme",
+        "Bug Reports": "https://github.com/xiaoyuxie-vico/PyDimension/issues",
+        "Source": "https://github.com/xiaoyuxie-vico/PyDimension",
+        "Documentation": "https://github.com/xiaoyuxie-vico/PyDimension#readme",
     },
 )
 

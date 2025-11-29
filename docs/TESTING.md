@@ -1,4 +1,4 @@
-# Testing PyDimension 2.0
+# Testing PyDimension
 
 Quick guide for testing the package and code changes.
 
@@ -92,7 +92,7 @@ python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
 # Test that package works from anywhere
 cd /tmp
 python -c "import pydimension; print('✅ Package accessible')"
-cd /Users/xie/projects/PyDimension2.0
+cd /Users/xie/projects/PyDimension
 ```
 
 ## Troubleshooting
