@@ -38,8 +38,11 @@ Examples:
   # Disable basis vector normalization
   python analyze_dimensions.py --config config_synthetic.json --no-normalize-basis
   
-  # Also save normalized log10 data
-  python analyze_dimensions.py --config config_synthetic.json --save-normalized-lg
+  # Save normalized log10 data (enabled by default)
+  python analyze_dimensions.py --config config_synthetic.json
+  
+  # Disable saving normalized log10 data
+  python analyze_dimensions.py --config config_synthetic.json --no-save-normalized-lg
         """
     )
     parser.add_argument('--config', '-c', type=str, default=None,
@@ -57,8 +60,8 @@ Examples:
                        help='Filename for afterDA data (overrides config)')
     parser.add_argument('--basis_vectors_filename', type=str, default=None,
                        help='Filename for basis vectors (overrides config)')
-    parser.add_argument('--save-normalized-lg', action='store_true',
-                       help='Also save normalized log10 data (lgπ = log10(π/max(π)))')
+    parser.add_argument('--no-save-normalized-lg', dest='save_normalized_lg', action='store_false', default=True,
+                       help='Disable saving normalized log10 data (default: enabled)')
     parser.add_argument('--plot', action='store_true',
                        help='Generate and save visualization plots')
     parser.add_argument('--plot_filename', type=str, default=None,
@@ -109,7 +112,7 @@ Examples:
         # Save results
         afterDA_path, basis_path = analyzer.save_results()
         
-        # Save normalized lg data if requested
+        # Save normalized lg data (enabled by default)
         if args.save_normalized_lg:
             lg_path = analyzer.save_normalized_lg_data()
             print(f"Normalized lg data: {lg_path}")

@@ -28,8 +28,9 @@ python analyze_dimensions.py \
     --normalized_data_file output/data/normalized_data.csv \
     --dimension_matrix_file output/data/dimension_matrix.csv
 
-# Also save normalized log10 data
-python analyze_dimensions.py --config config_synthetic.json --save-normalized-lg
+# Normalized log10 data is saved by default
+# Use --no-save-normalized-lg to disable
+python analyze_dimensions.py --config config_synthetic.json
 ```
 
 ### Using the Module Directly
@@ -58,8 +59,9 @@ python -m pydimension.dimensional_analysis \
     --dimension_matrix_file dimension_matrix.csv \
     --no-normalize-basis
 
-# Also save normalized log10 data
-python -m pydimension.dimensional_analysis --config config_synthetic.json --save-normalized-lg
+# Normalized log10 data is saved by default
+# Use --no-save-normalized-lg to disable
+python -m pydimension.dimensional_analysis --config config_synthetic.json
 ```
 
 ### Using Python API
@@ -249,9 +251,9 @@ Saves:
 - **afterDA_data.csv**: Dimensionless variables (π1, π2, ...) and output variable
 - **basis_vectors.csv**: Basis vectors with variables as rows and w1, w2, ... as columns
 
-### Step 7: Normalized Log10 Data (Optional)
+### Step 7: Normalized Log10 Data (Enabled by Default)
 
-If `--save-normalized-lg` is used:
+Normalized log10 data is saved by default. To disable, use `--no-save-normalized-lg`:
 - Divides each π by its maximum: π_norm = π / max(π)
 - Computes log10: lgπ = log10(π_norm)
 - Normalizes output: output_norm = output / max(output)
@@ -408,12 +410,21 @@ python preprocess_data.py --config pydimension/configs/config_synthetic.json
 python analyze_dimensions.py --config pydimension/configs/config_synthetic.json
 ```
 
-### Example 2: With Normalized Log10 Data
+### Example 2: Normalized Log10 Data (Default)
+
+Normalized log10 data is saved by default:
+
+```bash
+python analyze_dimensions.py \
+    --config pydimension/configs/config_synthetic.json
+```
+
+To disable saving normalized log10 data:
 
 ```bash
 python analyze_dimensions.py \
     --config pydimension/configs/config_synthetic.json \
-    --save-normalized-lg
+    --no-save-normalized-lg
 ```
 
 ### Example 3: Disable Basis Normalization

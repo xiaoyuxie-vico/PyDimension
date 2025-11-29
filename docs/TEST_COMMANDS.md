@@ -39,8 +39,8 @@ python generate_data.py --config pydimension/configs/config_synthetic.json --plo
 # Step 2: Preprocess data
 python preprocess_data.py --config pydimension/configs/config_synthetic.json --plot
 
-# Step 3: Dimensional analysis (with normalized lg data)
-python analyze_dimensions.py --config pydimension/configs/config_synthetic.json --save-normalized-lg --plot
+# Step 3: Dimensional analysis (normalized lg data saved by default)
+python analyze_dimensions.py --config pydimension/configs/config_synthetic.json --plot
 
 # Step 4: Dimensional filtering (outputs suggested_dominant_count.json)
 python filter_constraints.py --config pydimension/configs/config_synthetic.json --plot
@@ -57,8 +57,8 @@ python generate_data.py --config pydimension/configs/config_keyhole.json --plot
 # Step 2: Preprocess data
 python preprocess_data.py --config pydimension/configs/config_keyhole.json --plot
 
-# Step 3: Dimensional analysis (with normalized lg data)
-python analyze_dimensions.py --config pydimension/configs/config_keyhole.json --save-normalized-lg --plot
+# Step 3: Dimensional analysis (normalized lg data saved by default)
+python analyze_dimensions.py --config pydimension/configs/config_keyhole.json --plot
 
 # Step 4: Dimensional filtering (outputs suggested_dominant_count.json)
 python filter_constraints.py --config pydimension/configs/config_keyhole.json --plot
