@@ -64,6 +64,47 @@ st.markdown("""
         padding: 1rem;
         margin: 1rem 0;
     }
+    /* Ensure expander arrows are visible across all Streamlit versions */
+    /* This fixes the issue where expander arrows don't show on Hugging Face Spaces */
+    
+    /* Target expander headers - multiple selectors for compatibility */
+    [data-testid="stExpander"] > div:first-child,
+    [data-testid="stExpander"] button,
+    .streamlit-expanderHeader,
+    button[data-testid="baseButton-header"] {
+        position: relative;
+    }
+    
+    /* Add arrow indicator using ::before pseudo-element */
+    [data-testid="stExpander"] > div:first-child::before,
+    [data-testid="stExpander"] button::before,
+    .streamlit-expanderHeader::before,
+    button[data-testid="baseButton-header"]::before {
+        content: "▶";
+        display: inline-block;
+        margin-right: 0.5rem;
+        transition: transform 0.2s ease;
+        color: inherit;
+        font-size: 0.85em;
+        vertical-align: middle;
+    }
+    
+    /* Rotate arrow when expanded */
+    [data-testid="stExpander"] > div:first-child[aria-expanded="true"]::before,
+    [data-testid="stExpander"] button[aria-expanded="true"]::before,
+    .streamlit-expanderHeader[aria-expanded="true"]::before,
+    button[data-testid="baseButton-header"][aria-expanded="true"]::before {
+        transform: rotate(90deg);
+    }
+    
+    /* Ensure any existing SVG/icon elements are visible */
+    [data-testid="stExpander"] svg,
+    .streamlit-expanderHeader svg,
+    button[data-testid="baseButton-header"] svg {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
