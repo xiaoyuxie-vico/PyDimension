@@ -145,20 +145,35 @@ if git remote get-url space >/dev/null 2>&1; then
             git checkout -b "$TEMP_BRANCH" "$REMOTE_HEAD" 2>/dev/null || exit 1
         }
         
-        # Get README with YAML from the original branch (before we switched)
-        ORIGINAL_README=$(git show "${CURRENT_BRANCH_NAME}:README.md" 2>/dev/null || echo "")
+        # Get all changed files from local branch (excluding binary files and output directories)
+        echo "📦 Copying code changes from local branch..."
         
-        if [ -z "$ORIGINAL_README" ] || ! echo "$ORIGINAL_README" | head -n 1 | grep -q "^---$"; then
-            # README doesn't have YAML, add it
-            echo "$ORIGINAL_README" > README.md 2>/dev/null || true
-            if [ ! -s README.md ]; then
-                # File is empty or doesn't exist, get it from HEAD
-                git checkout "${CURRENT_BRANCH_NAME}" -- README.md 2>/dev/null || true
-            fi
+        # Get list of files that changed between remote and local (excluding certain patterns)
+        CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR "$REMOTE_HEAD" "${CURRENT_BRANCH_NAME}" 2>/dev/null | \
+            grep -v "^images/" | \
+            grep -v "^output/" | \
+            grep -v "\.png$" | \
+            grep -v "\.jpg$" | \
+            grep -v "\.jpeg$" | \
+            grep -v "\.gif$" | \
+            grep -v "README\.md\.backup$" || true)
+        
+        if [ -n "$CHANGED_FILES" ]; then
+            # Copy all changed files to temp branch
+            for file in $CHANGED_FILES; do
+                if [ -f "$file" ] || git show "${CURRENT_BRANCH_NAME}:$file" >/dev/null 2>&1; then
+                    # Create directory if needed
+                    mkdir -p "$(dirname "$file")" 2>/dev/null || true
+                    # Copy file from local branch
+                    git show "${CURRENT_BRANCH_NAME}:$file" > "$file" 2>/dev/null || true
+                fi
+            done
+        fi
+        
+        # Ensure README has YAML frontmatter
+        if ! head -n 1 README.md 2>/dev/null | grep -q "^---$"; then
+            echo "📝 Adding YAML frontmatter to README.md..."
             ./scripts/prepare-hf-readme.sh
-        else
-            # README already has YAML, use it
-            echo "$ORIGINAL_README" > README.md
         fi
         
         # Verify YAML is present
@@ -169,9 +184,13 @@ if git remote get-url space >/dev/null 2>&1; then
             exit 1
         fi
         
-        # Commit the README with YAML
-        git add README.md
-        git commit -m "Add YAML frontmatter for Hugging Face Spaces configuration" || true
+        # Stage all changes
+        git add -A
+        
+        # Commit all changes
+        if ! git diff --cached --quiet; then
+            git commit -m "Update: Sync code changes and add YAML frontmatter for Hugging Face Spaces" || true
+        fi
         
         # Push from temp branch to main on remote
         if git push space "$TEMP_BRANCH:$CURRENT_BRANCH"; then
