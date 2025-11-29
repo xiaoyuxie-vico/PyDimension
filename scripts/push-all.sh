@@ -134,22 +134,52 @@ if git remote get-url space >/dev/null 2>&1; then
         TEMP_COMMIT=true
     fi
     
-    # Try to push, use force-with-lease if needed (safer than force)
-    if git push space "$CURRENT_BRANCH" 2>&1 | grep -q "non-fast-forward"; then
-        echo "⚠️  Push rejected (non-fast-forward). Attempting to merge remote changes..."
+    # Try to push, handle non-fast-forward by creating commit on remote HEAD
+    PUSH_OUTPUT=$(git push space "$CURRENT_BRANCH" 2>&1) || PUSH_FAILED=true
+    
+    if echo "$PUSH_OUTPUT" | grep -q "non-fast-forward"; then
+        echo "⚠️  Push rejected (non-fast-forward). Creating commit on remote HEAD to avoid history issues..."
         
-        # Try to merge remote changes
-        if git pull space "$CURRENT_BRANCH" --no-edit --no-rebase 2>/dev/null; then
-            echo "✅ Successfully merged remote changes"
-            # Try pushing again
-            if git push space "$CURRENT_BRANCH"; then
-                echo "✅ Successfully pushed to Hugging Face Spaces"
+        # Save current commit
+        CURRENT_COMMIT=$(git rev-parse HEAD)
+        
+        # Checkout remote branch temporarily
+        git fetch space "$CURRENT_BRANCH" 2>/dev/null || true
+        REMOTE_HEAD=$(git rev-parse "space/$CURRENT_BRANCH" 2>/dev/null || echo "")
+        
+        if [ -n "$REMOTE_HEAD" ]; then
+            # Create a new branch from remote HEAD
+            TEMP_BRANCH="temp-hf-push-$$"
+            git checkout -b "$TEMP_BRANCH" "$REMOTE_HEAD" 2>/dev/null || git checkout "$TEMP_BRANCH" 2>/dev/null || true
+            
+            # Copy README with YAML from our commit
+            git show "$CURRENT_COMMIT:README.md" > README.md 2>/dev/null || true
+            
+            # Verify YAML is present
+            if head -n 1 README.md | grep -q "^---$"; then
+                git add README.md
+                git commit -m "Add YAML frontmatter for Hugging Face Spaces configuration" || true
+                
+                # Push from temp branch
+                if git push space "$TEMP_BRANCH:$CURRENT_BRANCH"; then
+                    echo "✅ Successfully pushed to Hugging Face Spaces"
+                    # Switch back to main
+                    git checkout "$CURRENT_BRANCH" 2>/dev/null || true
+                    git branch -D "$TEMP_BRANCH" 2>/dev/null || true
+                else
+                    echo "❌ Failed to push to Hugging Face Spaces"
+                    git checkout "$CURRENT_BRANCH" 2>/dev/null || true
+                    git branch -D "$TEMP_BRANCH" 2>/dev/null || true
+                    exit 1
+                fi
             else
-                echo "❌ Failed to push after merge"
+                echo "❌ Error: Could not get README with YAML from current commit"
+                git checkout "$CURRENT_BRANCH" 2>/dev/null || true
+                git branch -D "$TEMP_BRANCH" 2>/dev/null || true
                 exit 1
             fi
         else
-            echo "⚠️  Merge failed. Using force-with-lease (safe force push)..."
+            echo "⚠️  Could not determine remote HEAD. Using force-with-lease (safe force push)..."
             if git push space "$CURRENT_BRANCH" --force-with-lease; then
                 echo "✅ Successfully pushed to Hugging Face Spaces (force-with-lease)"
             else
@@ -161,7 +191,51 @@ if git remote get-url space >/dev/null 2>&1; then
                 exit 1
             fi
         fi
-    elif git push space "$CURRENT_BRANCH"; then
+    elif echo "$PUSH_OUTPUT" | grep -q "binary files"; then
+        echo "❌ Push rejected: Binary files detected in history"
+        echo "   This usually means the local branch has binary files that Hugging Face Spaces rejects."
+        echo "   The Hugging Face Space remote has a cleaned history."
+        echo ""
+        echo "   Solution: Create a commit directly on the remote HEAD"
+        echo "   Attempting alternative push method..."
+        
+        # Use the same method as non-fast-forward
+        CURRENT_COMMIT=$(git rev-parse HEAD)
+        git fetch space "$CURRENT_BRANCH" 2>/dev/null || true
+        REMOTE_HEAD=$(git rev-parse "space/$CURRENT_BRANCH" 2>/dev/null || echo "")
+        
+        if [ -n "$REMOTE_HEAD" ]; then
+            TEMP_BRANCH="temp-hf-push-$$"
+            git checkout -b "$TEMP_BRANCH" "$REMOTE_HEAD" 2>/dev/null || git checkout "$TEMP_BRANCH" 2>/dev/null || true
+            git show "$CURRENT_COMMIT:README.md" > README.md 2>/dev/null || true
+            
+            if head -n 1 README.md | grep -q "^---$"; then
+                git add README.md
+                git commit -m "Add YAML frontmatter for Hugging Face Spaces configuration" || true
+                
+                if git push space "$TEMP_BRANCH:$CURRENT_BRANCH"; then
+                    echo "✅ Successfully pushed to Hugging Face Spaces"
+                    git checkout "$CURRENT_BRANCH" 2>/dev/null || true
+                    git branch -D "$TEMP_BRANCH" 2>/dev/null || true
+                else
+                    echo "❌ Failed to push to Hugging Face Spaces"
+                    git checkout "$CURRENT_BRANCH" 2>/dev/null || true
+                    git branch -D "$TEMP_BRANCH" 2>/dev/null || true
+                    exit 1
+                fi
+            else
+                echo "❌ Error: Could not get README with YAML"
+                git checkout "$CURRENT_BRANCH" 2>/dev/null || true
+                git branch -D "$TEMP_BRANCH" 2>/dev/null || true
+                exit 1
+            fi
+        else
+            echo "❌ Could not determine remote HEAD. Cannot proceed."
+            exit 1
+        fi
+    elif [ "$PUSH_FAILED" != "true" ]; then
+        # Push succeeded
+        echo "✅ Successfully pushed to Hugging Face Spaces"
         echo "✅ Successfully pushed to Hugging Face Spaces"
         
         # If we created a temp commit, we can optionally keep it or reset
@@ -171,6 +245,7 @@ if git remote get-url space >/dev/null 2>&1; then
         fi
     else
         echo "❌ Failed to push to Hugging Face Spaces"
+        echo "   Error output: $PUSH_OUTPUT"
         # Reset temp commit if it was created
         if [ "$TEMP_COMMIT" = true ]; then
             git reset HEAD~1 2>/dev/null || true
