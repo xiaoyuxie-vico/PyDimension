@@ -109,6 +109,22 @@ echo "✅ README.md now has complete YAML frontmatter for Hugging Face Spaces"
 if git remote get-url space >/dev/null 2>&1; then
     echo "🌐 Pushing to Hugging Face Spaces (space) with YAML frontmatter..."
     
+    # Fetch latest from Hugging Face Space to check if we're behind
+    echo "📥 Fetching latest from Hugging Face Spaces..."
+    git fetch space "$CURRENT_BRANCH" 2>/dev/null || true
+    
+    # Check if remote is ahead
+    LOCAL_COMMIT=$(git rev-parse HEAD)
+    REMOTE_COMMIT=$(git rev-parse "space/$CURRENT_BRANCH" 2>/dev/null || echo "")
+    
+    if [ -n "$REMOTE_COMMIT" ] && [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+        # Check if we're behind (remote has commits we don't have)
+        if git merge-base --is-ancestor "$LOCAL_COMMIT" "space/$CURRENT_BRANCH" 2>/dev/null; then
+            echo "⚠️  Hugging Face Space is ahead of local branch"
+            echo "📝 Creating a commit with YAML frontmatter that can be merged..."
+        fi
+    fi
+    
     # Create a temporary commit with YAML if needed
     TEMP_COMMIT=false
     if ! git diff --quiet README.md 2>/dev/null; then
@@ -118,7 +134,34 @@ if git remote get-url space >/dev/null 2>&1; then
         TEMP_COMMIT=true
     fi
     
-    if git push space "$CURRENT_BRANCH"; then
+    # Try to push, use force-with-lease if needed (safer than force)
+    if git push space "$CURRENT_BRANCH" 2>&1 | grep -q "non-fast-forward"; then
+        echo "⚠️  Push rejected (non-fast-forward). Attempting to merge remote changes..."
+        
+        # Try to merge remote changes
+        if git pull space "$CURRENT_BRANCH" --no-edit --no-rebase 2>/dev/null; then
+            echo "✅ Successfully merged remote changes"
+            # Try pushing again
+            if git push space "$CURRENT_BRANCH"; then
+                echo "✅ Successfully pushed to Hugging Face Spaces"
+            else
+                echo "❌ Failed to push after merge"
+                exit 1
+            fi
+        else
+            echo "⚠️  Merge failed. Using force-with-lease (safe force push)..."
+            if git push space "$CURRENT_BRANCH" --force-with-lease; then
+                echo "✅ Successfully pushed to Hugging Face Spaces (force-with-lease)"
+            else
+                echo "❌ Failed to push to Hugging Face Spaces"
+                # Reset temp commit if it was created
+                if [ "$TEMP_COMMIT" = true ]; then
+                    git reset HEAD~1 2>/dev/null || true
+                fi
+                exit 1
+            fi
+        fi
+    elif git push space "$CURRENT_BRANCH"; then
         echo "✅ Successfully pushed to Hugging Face Spaces"
         
         # If we created a temp commit, we can optionally keep it or reset
