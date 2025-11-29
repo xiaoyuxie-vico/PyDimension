@@ -348,7 +348,7 @@ def show_home_page():
     if st.session_state.pipeline_results:
         completed_steps = list(st.session_state.pipeline_results.keys())
         st.success(f"✅ **{len(completed_steps)} step(s) completed:** {', '.join(completed_steps)}")
-        with st.expander("View detailed results"):
+        with st.expander("View detailed results (click to see more)"):
             st.json(st.session_state.pipeline_results)
     else:
         st.info("👈 **No analysis run yet.** Use the navigation sidebar to start with any module!")
@@ -358,7 +358,7 @@ def show_data_generation_page(default_config):
     st.markdown("## 📊 Data Generation")
     st.markdown("Generate synthetic datasets with known dimensionless relationships.")
     
-    with st.expander("ℹ️ How to use the Data Generation module", expanded=False):
+    with st.expander("ℹ️ How to use the Data Generation module (click to see more)", expanded=False):
         st.markdown("""
         ### What this page does
         
@@ -528,7 +528,7 @@ def show_data_preprocessing_page(default_config):
     st.markdown("## 🔧 Data Preprocessing")
     st.markdown("Load, clean, and normalize data for analysis.")
     
-    with st.expander("ℹ️ How to use the Data Preprocessing module", expanded=False):
+    with st.expander("ℹ️ How to use the Data Preprocessing module (click to see more)", expanded=False):
         st.markdown("""
         ### What this page does
         
@@ -774,7 +774,7 @@ def show_data_preprocessing_page(default_config):
     # Input Data Preview and Visualization
     if input_file and Path(input_file).exists():
         try:
-            with st.expander("📊 Input Data Preview", expanded=False):
+            with st.expander("📊 Input Data Preview (click to see more)", expanded=False):
                 # Load and display data
                 input_df = pd.read_csv(input_file)
                 
@@ -934,7 +934,7 @@ def show_dimensional_analysis_page(default_config):
     st.markdown("Compute basis vectors and create dimensionless variables.")
     
     # High-level guidance for this module
-    with st.expander("ℹ️ What the Dimensional Analysis module does", expanded=False):
+    with st.expander("ℹ️ What the Dimensional Analysis module does (click to see more)", expanded=False):
         st.markdown("""
         ### Overview
         
@@ -970,7 +970,7 @@ def show_dimensional_analysis_page(default_config):
         """)
     
     # Guidance: how to prepare a dimension matrix
-    with st.expander("ℹ️ How to prepare the dimension matrix (recommended reading)", expanded=False):
+    with st.expander("ℹ️ How to prepare the dimension matrix (click to see more)", expanded=False):
         st.markdown("""
         ### What is a dimension matrix?
         
@@ -1120,7 +1120,7 @@ def show_constraint_filtering_page(default_config):
     st.markdown("Identify dominant dimensionless groups using PCA and SIR analysis.")
     
     # High-level guidance for this module
-    with st.expander("ℹ️ What the Dimensional Filtering module does", expanded=False):
+    with st.expander("ℹ️ What the Dimensional Filtering module does (click to see more)", expanded=False):
         st.markdown("""
         ### Overview
         
@@ -1429,7 +1429,7 @@ def show_optimization_discovery_page(default_config):
                     # Display Setup and Configuration Information
                     st.markdown("---")
                     st.markdown("### 📋 Setup and Configuration")
-                    with st.expander("View Setup Information", expanded=False):
+                    with st.expander("View Setup Information (click to see more)", expanded=False):
                         # Config source
                         st.markdown("#### Configuration")
                         config_source = input_file if 'config' in str(input_file) else 'Streamlit inputs'
@@ -1717,7 +1717,7 @@ def show_results_viewer_page():
                 if data_dir.exists():
                     data_files = list(data_dir.glob("*.csv"))
                     for file in data_files:
-                        with st.expander(f"📄 {file.name}"):
+                        with st.expander(f"📄 {file.name} (click to see more)"):
                             df = pd.read_csv(file)
                             st.dataframe(df)
                             st.download_button("Download CSV", df.to_csv(index=False), file.name, "text/csv")
@@ -1737,7 +1737,7 @@ def show_results_viewer_page():
                 if results_dir.exists():
                     result_files = list(results_dir.glob("*.json"))
                     for file in result_files:
-                        with st.expander(f"📄 {file.name}"):
+                        with st.expander(f"📄 {file.name} (click to see more)"):
                             with open(file, 'r') as f:
                                 data = json.load(f)
                             st.json(data)
