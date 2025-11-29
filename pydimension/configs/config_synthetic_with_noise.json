@@ -1,0 +1,45 @@
+{
+  "DATA_GENERATION": {
+    "N": 7,
+    "M": 100,
+    "ndim": 1,
+    "poly_order": 1,
+    "random_seed": 32,
+    "noise_level": 5.0,
+    "n_discrete": 0,
+    "n_fix": 5,
+    "coefficients": [2.0, 1.0],
+    "gamma_vectors": [
+      [1.0, 1.0, 0.0]
+    ]
+  },
+  "DATA_PREPROCESSING": {
+    "enabled": false
+  },
+  "DIMENSIONAL_ANALYSIS": {
+    "enabled": false,
+    "normalize_basis": true
+  },
+  "CONSTRAINT_FILTERING": {
+    "enabled": false
+  },
+  "NEURAL_NETWORK_TRAINING": {
+    "enabled": false
+  },
+  "OPTIMIZATION_DISCOVERY": {
+    "enabled": false
+  },
+  "OUTPUT": {
+    "output_dir": "output",
+    "data_dir": "data",
+    "figures_dir": "figures",
+    "results_dir": "results",
+    "logs_dir": "logs"
+  },
+  "DATA_GENERATION_OUTPUT": {
+    "dataset_filename": "dataset_synthetic.csv",
+    "dimension_matrix_filename": "dimension_matrix_synthetic.csv",
+    "plot_filename": "data_generation_plots.png"
+  }
+}
+
