@@ -281,6 +281,7 @@ generator.save_datasets()
 - **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** - Development workflow and code checking
 - **[docs/TEST_COMMANDS.md](docs/TEST_COMMANDS.md)** - Quick command reference
 - **[docs/STREAMLIT_README.md](docs/STREAMLIT_README.md)** - Web interface guide
+- **[docs/HUGGINGFACE_DEPLOY.md](docs/HUGGINGFACE_DEPLOY.md)** - Hugging Face Spaces deployment guide
 - **Module READMEs**: Detailed docs in `pydimension/*/README.md`
 - **Config Files**: [pydimension/configs/README.md](pydimension/configs/README.md)
 
