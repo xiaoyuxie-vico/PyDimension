@@ -1,6 +1,9 @@
 # Output directories
 output/
 *.csv
+
+# Images directory (for Hugging Face Spaces compatibility)
+images/
 *.png
 
 # Python
