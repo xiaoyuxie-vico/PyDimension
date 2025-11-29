@@ -178,7 +178,7 @@ def show_home_page():
     # Show logo centered above the title
     logo_col_left, logo_col_center, logo_col_right = st.columns([1, 2, 1])
     with logo_col_center:
-        st.image("https://i.postimg.cc/Gt8Cznt4/logo.png", use_container_width=True)
+        st.image("https://i.postimg.cc/Gt8Cznt4/logo.png")
     
     st.markdown("## Welcome to PyDimension 2.0")
     st.markdown("### A Comprehensive Tool for Discovering Dimensionless Relationships")
@@ -1617,7 +1617,7 @@ def show_optimization_discovery_page(default_config):
                     )
                     arch_col_left, arch_col_center, arch_col_right = st.columns([1, 2, 1])
                     with arch_col_center:
-                        st.image(str(arch_plot_path), use_container_width=True)
+                        st.image(str(arch_plot_path))
                 
                 # Display original scale π vs output plot (if available)
                 original_scale_pi_plot_path = Path(output_dir) / 'figures' / 'original_scale_pi_vs_output.png'
