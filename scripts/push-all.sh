@@ -223,31 +223,32 @@ if [ "$CURRENT_BRANCH_NAME" != "main" ] && [ "$CURRENT_BRANCH_NAME" != "$CURRENT
     CURRENT_BRANCH_NAME="$CURRENT_BRANCH"
 fi
 
-# Restore README from HEAD (the committed version, which should be clean)
+# Force restore README from HEAD (the committed version, which should be clean)
+# This discards any working directory changes
 git checkout HEAD -- README.md 2>/dev/null || true
 
-# Now check and remove YAML if it exists
+# Double-check: if README still has YAML, force remove it
 if head -n 1 README.md 2>/dev/null | grep -q "^---$"; then
-    ./scripts/restore-github-readme.sh
-    rm -f README.md.backup
-fi
-
-# Verify README is clean (no YAML) - force remove if still present
-if head -n 1 README.md 2>/dev/null | grep -q "^---$"; then
-    echo "⚠️  Warning: README.md still has YAML frontmatter, force-removing..."
-    # Force remove YAML
+    echo "⚠️  README still has YAML after checkout, force-removing..."
+    # Find where YAML ends (second ---)
     YAML_END=$(grep -n "^---$" README.md | sed -n '2p' | cut -d: -f1)
     if [ -n "$YAML_END" ]; then
+        # Remove YAML frontmatter (lines 1 to YAML_END+1 to include blank line)
         sed "1,$((YAML_END+1))d" README.md > README.md.tmp
         mv README.md.tmp README.md
         echo "✅ Force-removed YAML frontmatter"
     else
-        # If we can't find the end, try a different approach
-        # Remove everything from start until we find a line starting with #
+        # If we can't find the end, remove everything from start until we find a line starting with #
         sed -n '/^#/,$p' README.md > README.md.tmp
         mv README.md.tmp README.md
         echo "✅ Force-removed YAML frontmatter (alternative method)"
     fi
+fi
+
+# Final verification - README should now be clean
+if head -n 1 README.md 2>/dev/null | grep -q "^---$"; then
+    echo "❌ Error: Failed to remove YAML frontmatter from README.md"
+    exit 1
 fi
 
 # Commit and push clean README to GitHub if it changed
