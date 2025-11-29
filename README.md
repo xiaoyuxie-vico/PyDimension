@@ -283,6 +283,7 @@ generator.save_datasets()
 - **[docs/USAGE.md](docs/USAGE.md)** - How to use the package (CLI, API, scripts)
 - **[docs/TESTING.md](docs/TESTING.md)** - Testing guide and verification
 - **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** - Development workflow and code checking
+- **[docs/WORKFLOW.md](docs/WORKFLOW.md)** - Quick push workflow and deployment shortcuts
 - **[docs/TEST_COMMANDS.md](docs/TEST_COMMANDS.md)** - Quick command reference
 - **[docs/STREAMLIT_README.md](docs/STREAMLIT_README.md)** - Web interface guide
 - **[docs/HUGGINGFACE_DEPLOY.md](docs/HUGGINGFACE_DEPLOY.md)** - Hugging Face Spaces deployment guide
