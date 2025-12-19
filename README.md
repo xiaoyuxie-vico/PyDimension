@@ -38,19 +38,20 @@ If you can provide a table of measurements (inputs with units and outputs), PyDi
 - Visualize and interpret how your system behaves across conditions.
 
 
-## Research Paper
+## Publications
 
-**Title:** Data-driven discovery of dimensionless numbers and governing laws from scarce measurements
+### Paper 1
+**Title:** *A Tutorial on Dimensionless Learning: Geometric Interpretation and the Effect of Noise*  
+**Authors:** Zhengtao Gan, Xiaoyu Xie  
+**Status:** Preprint  
+**Link:** [arXiv:2512.15760](https://www.arxiv.org/abs/2512.15760)
 
-**Authors:** Xiaoyu Xie, Arash Samaei, Jiachen Guo, Wing Kam Liu, Zhengtao Gan
-
-**Journal:** Nature Communications, Volume 13, Article 7569 (2022)
-
-
-**Links:**
-- [Main manuscript](https://www.nature.com/articles/s41467-022-35084-w) (Nature Communications)
-- [Supplementary Information](https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-022-35084-w/MediaObjects/41467_2022_35084_MOESM1_ESM.pdf) (PDF)
-
+### Paper 2
+**Title:** *Data-driven Discovery of Dimensionless Numbers and Governing Laws from Scarce Measurements*  
+**Authors:** Xiaoyu Xie, Arash Samaei, Jiachen Guo, Wing Kam Liu, Zhengtao Gan  
+**Journal:** *Nature Communications*, Volume 13, Article 7569 (2022)  
+**Links:**  
+- [Journal Article](https://www.nature.com/articles/s41467-022-35084-w)  
 **Note:** This repository (PyDimension) is a refactored, production-ready implementation of the methodology described in the paper. The original research code and notebooks used in the paper are preserved on the [`v1.0` branch](https://github.com/xiaoyuxie-vico/PyDimension/tree/v1.0).
 
 ### Video Talks
