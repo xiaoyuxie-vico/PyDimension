@@ -367,7 +367,6 @@ If you have any questions, suggestions, or would like to contribute to or collab
 
 - Xiaoyu Xie
   - Email: xiaoyuxie.vico@gmail.com
-  - Website: xiaoyuxie.top
 - Zhengtao Gan
   - Email: Zhengtao.Gan@asu.edu
-  - Profile: ASU Profile
+
