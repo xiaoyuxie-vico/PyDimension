@@ -1,6 +1,8 @@
 # Output directories
 output/
 *.csv
+# Exception: track CSV files in dataset/keyhole
+!dataset/keyhole/*.csv
 
 # Images directory (for Hugging Face Spaces compatibility)
 images/

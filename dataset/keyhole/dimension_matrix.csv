@@ -1,0 +1,8 @@
+Dimension,etaP,Vs,r0,alpha,rho,cp,Tl-T0,e*
+Mass,1,0,0,0,1,0,0,0
+Length,2,1,1,2,-3,2,0,0
+Time,-3,-1,0,-1,0,-2,0,0
+Temperature,0,0,0,0,0,-1,1,0
+Current,0,0,0,0,0,0,0,0
+Amount,0,0,0,0,0,0,0,0
+Luminous,0,0,0,0,0,0,0,0
