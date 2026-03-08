@@ -22,9 +22,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from pydimension.data_generation import DataGenerator, DataGenerationConfig
 from pydimension.data_preprocessing import DataPreprocessor, DataPreprocessingConfig
-from pydimension.dimensional_analysis import DimensionalAnalyzer, DimensionalAnalysisConfig
-from pydimension.constraint_filtering import ConstraintFilterer, ConstraintFilteringConfig
-from pydimension.optimization_discovery import OptimizationDiscoverer, OptimizationDiscoveryConfig
+from legacy.pydimension_v2.dimensional_analysis import DimensionalAnalyzer, DimensionalAnalysisConfig
+from legacy.pydimension_v2.constraint_filtering import ConstraintFilterer, ConstraintFilteringConfig
+from legacy.pydimension_v2.optimization_discovery import OptimizationDiscoverer, OptimizationDiscoveryConfig
 
 # Page configuration
 st.set_page_config(

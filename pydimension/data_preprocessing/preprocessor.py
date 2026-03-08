@@ -5,10 +5,12 @@ Core data preprocessing functionality.
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import json
 from datetime import datetime
 import os
+from numpy.linalg import matrix_rank
+from scipy.linalg import null_space
 
 # Matplotlib setup for non-interactive backend
 import matplotlib
@@ -31,6 +33,12 @@ class DataPreprocessor:
         self.input_variables: List[str] = []
         self.output_variables: List[str] = []
         self.variable_units: Dict[str, str] = {}
+        self.dimension_names: List[str] = []
+        self.output_variable: Optional[str] = None
+        self.basis_vectors: Optional[np.ndarray] = None
+        self.afterDA_data: Optional[pd.DataFrame] = None
+        self.dimensionless_expressions: List[str] = []
+        self.normalized_lg_data: Optional[pd.DataFrame] = None
         
     def load_data(self) -> pd.DataFrame:
         """Load data from CSV file."""
@@ -99,6 +107,8 @@ class DataPreprocessor:
         
         # Try default locations
         default_paths = [
+            Path(self.config.input_file).parent / 'dimension_matrix_synthetic.csv' if self.config.input_file else None,
+            Path(self.config.input_file).parent / 'dimension_matrix.csv' if self.config.input_file else None,
             Path(self.config.output_dir) / self.config.data_dir / 'dimension_matrix_synthetic.csv',
             Path(self.config.output_dir) / self.config.data_dir / 'dimension_matrix.csv',
             'output/data/dimension_matrix_synthetic.csv',
@@ -108,7 +118,7 @@ class DataPreprocessor:
         ]
         
         for path in default_paths:
-            if Path(path).exists():
+            if path is not None and Path(path).exists():
                 print(f"✅ Found dimension matrix at: {path}")
                 return self._load_matrix_from_file(Path(path), dimension_names)
         
@@ -157,12 +167,14 @@ class DataPreprocessor:
         if self.config.variable_units is None:
             # Try to infer units from variable names
             self.variable_units = self._infer_units_from_names()
+        else:
+            self.variable_units = dict(self.config.variable_units)
         
         all_vars = self.input_variables + self.output_variables
         matrix = {}
         
         for var in all_vars:
-            unit = self.config.variable_units.get(var, 'dimensionless')
+            unit = self.variable_units.get(var, 'dimensionless')
             dimensions = self._parse_dimensions(unit)
             matrix[var] = dimensions
         
@@ -306,6 +318,242 @@ class DataPreprocessor:
         
         return self.normalized_data
     
+    def _prepare_dimensional_analysis_inputs(self) -> Tuple[pd.DataFrame, np.ndarray]:
+        """Prepare normalized data and active dimension matrix for dimensional analysis."""
+        if self.normalized_data is None:
+            raise ValueError("Normalized data must be prepared first. Call process() before dimensional analysis.")
+        if not self.dimension_matrix:
+            raise ValueError("Dimension matrix must be prepared first. Call process() before dimensional analysis.")
+
+        all_columns = list(self.normalized_data.columns)
+        self.output_variable = all_columns[-1]
+        self.input_variables = all_columns[:-1]
+
+        available_vars = [var for var in self.input_variables if var in self.dimension_matrix]
+        if not available_vars:
+            raise ValueError(
+                f"No input variables found in dimension matrix. "
+                f"Input variables: {self.input_variables}, "
+                f"Matrix variables: {list(self.dimension_matrix.keys())}"
+            )
+
+        self.input_variables = available_vars
+        full_matrix = np.array([self.dimension_matrix[var] for var in self.input_variables], dtype=int).T
+        all_dimension_names = ['Mass', 'Length', 'Time', 'Temperature', 'Current', 'Amount', 'Luminous']
+        non_zero_rows = ~np.all(full_matrix == 0, axis=1)
+        active_matrix = full_matrix[non_zero_rows, :]
+        self.dimension_names = [all_dimension_names[i] for i, keep in enumerate(non_zero_rows) if keep]
+
+        print(f"   Input variables: {self.input_variables}")
+        print(f"   Output variable: {self.output_variable}")
+        print(f"   Active dimensions: {self.dimension_names}")
+        print(f"   Matrix shape: {active_matrix.shape}")
+        print(f"   Matrix rank: {matrix_rank(active_matrix)}")
+        print(f"   Variables: {len(self.input_variables)}")
+        print(f"   Expected null space dimension: {len(self.input_variables) - matrix_rank(active_matrix)}")
+        return self.normalized_data, active_matrix
+
+    def simplify_basis_vectors(self, null_sp: np.ndarray, active_matrix: np.ndarray) -> np.ndarray:
+        """Create sparse basis vectors using exact rational arithmetic when SymPy is available."""
+        try:
+            from sympy import Matrix, ilcm, igcd
+        except ImportError:
+            print("  ⚠️ Warning: SymPy not available, using original vectors")
+            return null_sp
+
+        matrix = Matrix(active_matrix.astype(int))
+        nullspace_vectors = matrix.nullspace()
+        if not nullspace_vectors:
+            return null_sp
+
+        primitive_vectors = []
+        for vector in nullspace_vectors:
+            denominators = [value.as_numer_denom()[1] for value in vector if value != 0]
+            scale = denominators[0] if denominators else 1
+            for denominator in denominators[1:]:
+                scale = ilcm(scale, denominator)
+
+            scaled = vector * scale
+            elements = [abs(int(value)) for value in scaled if value != 0]
+            gcd_value = elements[0] if elements else 1
+            for element in elements[1:]:
+                gcd_value = igcd(gcd_value, element)
+
+            if gcd_value > 1:
+                scaled = scaled // gcd_value
+
+            for value in scaled:
+                if value != 0:
+                    if value < 0:
+                        scaled = -scaled
+                    break
+
+            primitive_vectors.append(np.array([float(value) for value in scaled]))
+
+        return np.column_stack(primitive_vectors)
+
+    def normalize_to_unit_vectors(self, basis_vectors: np.ndarray) -> np.ndarray:
+        """Normalize each basis vector to unit length."""
+        normalized_vectors = []
+        for index in range(basis_vectors.shape[1]):
+            vector = basis_vectors[:, index].copy()
+            norm = np.linalg.norm(vector)
+            if norm > 1e-10:
+                vector = vector / norm
+            else:
+                print(f"  ⚠️ Warning: Basis vector w{index + 1} has zero magnitude")
+            print(f"  w{index + 1} magnitude: {np.linalg.norm(vector):.6f}")
+            normalized_vectors.append(vector)
+        return np.column_stack(normalized_vectors)
+
+    def find_basis_vectors(self, active_matrix: Optional[np.ndarray] = None) -> np.ndarray:
+        """Find basis vectors of the active dimension-matrix null space."""
+        if active_matrix is None:
+            _, active_matrix = self._prepare_dimensional_analysis_inputs()
+
+        print(f"\n=== Finding Null Space ===")
+        print(f"Dimension matrix shape: {active_matrix.shape}")
+        null_sp = null_space(active_matrix)
+        print(f"Null space shape: {null_sp.shape}")
+
+        if null_sp.shape[1] == 0:
+            raise ValueError("No null space found. Variables may already be dimensionless or the matrix is full rank.")
+        if np.all(np.abs(null_sp) < 1e-10):
+            raise ValueError("All basis vectors are zero. The dimension matrix is effectively full rank.")
+
+        print(f"\n=== Simplifying Basis Vectors ===")
+        simplified = self.simplify_basis_vectors(null_sp, active_matrix)
+        print(f"Simplified basis vectors shape: {simplified.shape}")
+
+        if self.config.normalize_basis:
+            print(f"\n=== Normalizing Basis Vectors ===")
+            normalized = self.normalize_to_unit_vectors(simplified)
+            verification = active_matrix @ normalized
+            max_error = np.max(np.abs(verification))
+            print(f"Verification error: {max_error:.2e}")
+            if max_error > 1e-10:
+                print("⚠️ Warning: Simplified vectors are not exactly in the null space after normalization")
+            self.basis_vectors = normalized
+        else:
+            self.basis_vectors = simplified
+
+        return self.basis_vectors
+
+    def create_dimensionless_variables(self) -> pd.DataFrame:
+        """Create dimensionless variables using the discovered basis vectors."""
+        if self.basis_vectors is None:
+            raise ValueError("Basis vectors must be computed first.")
+        if self.normalized_data is None:
+            raise ValueError("Normalized data must be prepared first.")
+        if self.output_variable is None:
+            raise ValueError("Output variable must be identified before creating dimensionless variables.")
+
+        input_data = self.normalized_data[self.input_variables].values
+        num_groups = self.basis_vectors.shape[1]
+        dimensionless_data = np.zeros((input_data.shape[0], num_groups))
+        self.dimensionless_expressions = []
+
+        for index in range(num_groups):
+            basis = self.basis_vectors[:, index]
+            expr_parts = []
+            for column_index, variable in enumerate(self.input_variables):
+                if abs(basis[column_index]) > 1e-10:
+                    if abs(basis[column_index] - 1.0) < 1e-10:
+                        expr_parts.append(f"{variable}")
+                    elif abs(basis[column_index] + 1.0) < 1e-10:
+                        expr_parts.append(f"{variable}^(-1)")
+                    elif abs(basis[column_index] - round(basis[column_index])) < 1e-10:
+                        expr_parts.append(f"{variable}^{int(round(basis[column_index]))}")
+                    else:
+                        expr_parts.append(f"{variable}^({basis[column_index]:.3f})")
+
+            expression = " × ".join(expr_parts) if expr_parts else "1"
+            self.dimensionless_expressions.append(f"π{index + 1} = {expression}")
+
+            log_pi = np.zeros(input_data.shape[0])
+            for column_index in range(len(self.input_variables)):
+                if abs(basis[column_index]) > 1e-10:
+                    data_column = np.maximum(input_data[:, column_index], 1e-10)
+                    log_pi += basis[column_index] * np.log(data_column)
+            dimensionless_data[:, index] = np.exp(log_pi)
+
+        dimensionless_data = np.round(dimensionless_data, 10)
+        dim_columns = [f"π{i + 1}" for i in range(num_groups)]
+        self.afterDA_data = pd.DataFrame(dimensionless_data, columns=dim_columns)
+        self.afterDA_data[self.output_variable] = self.normalized_data[self.output_variable].values
+
+        print(f"\n=== Created Dimensionless Variables ===")
+        print(f"Number of dimensionless groups: {num_groups}")
+        for expression in self.dimensionless_expressions:
+            print(f"  {expression}")
+
+        return self.afterDA_data
+
+    def compute_normalized_lg_pis(self) -> pd.DataFrame:
+        """Compute normalized log10 versions of the discovered π groups."""
+        if self.afterDA_data is None:
+            raise ValueError("Dimensionless variables must be created first.")
+
+        pi_cols = [column for column in self.afterDA_data.columns if column.startswith('π')]
+        output_col = self.output_variable if self.output_variable in self.afterDA_data.columns else None
+        work = self.afterDA_data.copy()
+        epsilon = 1e-12
+
+        for column in pi_cols:
+            max_value = work[column].max()
+            max_value = max_value if max_value > epsilon else epsilon
+            work[column] = work[column] / max_value
+
+        if output_col and output_col in work.columns:
+            output_max = work[output_col].max()
+            output_max = output_max if output_max > epsilon else epsilon
+            work[output_col] = work[output_col] / output_max
+
+        for column in pi_cols:
+            work[column] = np.log10(np.maximum(work[column], epsilon))
+
+        rename_map = {column: f"lg{column}" for column in pi_cols}
+        work = work.rename(columns=rename_map)
+        ordered_columns = list(rename_map.values()) + ([output_col] if output_col else [])
+        self.normalized_lg_data = work[ordered_columns]
+        return self.normalized_lg_data
+
+    def run_dimensional_analysis(self, verbose: bool = True) -> Dict[str, Any]:
+        """Run dimensional analysis as part of the unified preprocessing stage."""
+        if verbose:
+            print("=== Dimensional Analysis ===")
+
+        _, active_matrix = self._prepare_dimensional_analysis_inputs()
+        self.find_basis_vectors(active_matrix=active_matrix)
+        self.create_dimensionless_variables()
+
+        results = {
+            'timestamp': datetime.now().isoformat(),
+            'input_variables': self.input_variables,
+            'output_variable': self.output_variable,
+            'dimension_names': self.dimension_names,
+            'matrix_shape': active_matrix.shape,
+            'matrix_rank': matrix_rank(active_matrix),
+            'null_space_dimension': self.basis_vectors.shape[1],
+            'basis_vectors': self.basis_vectors.tolist(),
+            'dimensionless_expressions': self.dimensionless_expressions,
+            'normalize_basis': self.config.normalize_basis,
+            'data_shape': self.afterDA_data.shape if self.afterDA_data is not None else None,
+        }
+
+        if verbose:
+            print("\n=== Dimensional Analysis Complete ===")
+        return results
+
+    def process_with_dimensional_analysis(self, verbose: bool = True) -> Dict[str, Any]:
+        """Run preprocessing and dimensional analysis as one unified stage."""
+        preprocessing_results = self.process(verbose=verbose)
+        dimensional_analysis_results = self.run_dimensional_analysis(verbose=verbose)
+        return {
+            'preprocessing': preprocessing_results,
+            'dimensional_analysis': dimensional_analysis_results,
+        }
+
     def process(self, verbose: bool = True) -> Dict[str, any]:
         """Run the complete preprocessing pipeline."""
         if verbose:
@@ -344,6 +592,45 @@ class DataPreprocessor:
             print("\n=== Preprocessing Complete ===")
         
         return results
+
+    def save_dimensional_analysis_results(self) -> Tuple[Path, Path]:
+        """Save afterDA data and basis vectors."""
+        if self.afterDA_data is None:
+            raise ValueError("No dimensional-analysis data to save. Run process_with_dimensional_analysis() first.")
+        if self.basis_vectors is None:
+            raise ValueError("No basis vectors to save. Run process_with_dimensional_analysis() first.")
+
+        output_dir = Path(self.config.output_dir)
+        data_dir = output_dir / self.config.data_dir
+        data_dir.mkdir(parents=True, exist_ok=True)
+
+        afterDA_path = data_dir / self.config.afterDA_data_filename
+        self.afterDA_data.to_csv(afterDA_path, index=False, float_format='%.10f')
+
+        columns = [f"w{i + 1}" for i in range(self.basis_vectors.shape[1])]
+        basis_df = pd.DataFrame(self.basis_vectors, index=self.input_variables, columns=columns)
+        basis_df.insert(0, 'Variable', basis_df.index)
+        basis_df.reset_index(drop=True, inplace=True)
+
+        basis_path = data_dir / self.config.basis_vectors_filename
+        basis_df.to_csv(basis_path, index=False)
+
+        print(f"AfterDA data: {afterDA_path}")
+        print(f"Basis vectors: {basis_path}")
+        return afterDA_path, basis_path
+
+    def save_normalized_lg_data(self) -> Path:
+        """Save normalized log10 π data to file."""
+        normalized_lg_data = self.compute_normalized_lg_pis()
+
+        output_dir = Path(self.config.output_dir)
+        data_dir = output_dir / self.config.data_dir
+        data_dir.mkdir(parents=True, exist_ok=True)
+
+        lg_path = data_dir / self.config.normalized_lg_data_filename
+        normalized_lg_data.to_csv(lg_path, index=False, float_format='%.10f')
+        print(f"Normalized lg data: {lg_path}")
+        return lg_path
     
     def save_results(self) -> Tuple[Path, Path, Path]:
         """Save normalized data, original data, and dimension matrix to files."""

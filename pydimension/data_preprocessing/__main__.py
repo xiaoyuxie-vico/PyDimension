@@ -6,14 +6,14 @@ import argparse
 import sys
 from pathlib import Path
 
-from .preprocessor import DataPreprocessor
 from .config import DataPreprocessingConfig
+from .pipeline import run_dimensional_analysis_preprocessing
 
 
 def main():
     """Main entry point for data preprocessing CLI."""
     parser = argparse.ArgumentParser(
-        description='Preprocess datasets: select variables, normalize data, and generate dimension matrices',
+        description='Preprocess datasets and run integrated dimensional analysis',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -114,11 +114,7 @@ Examples:
     
     # Create preprocessor and run
     try:
-        preprocessor = DataPreprocessor(config)
-        results = preprocessor.process(verbose=not args.quiet)
-        
-        # Save results
-        normalized_path, original_path, matrix_path = preprocessor.save_results()
+        artifacts = run_dimensional_analysis_preprocessing(config, verbose=not args.quiet)
         
         # Create visualization if requested
         if args.plot:
@@ -136,15 +132,20 @@ Examples:
                 if plot_filename is None:
                     plot_filename = 'data_preprocessing_plots.png'
             
+            from .preprocessor import DataPreprocessor
+
+            preprocessor = DataPreprocessor(config)
+            preprocessor.process(verbose=False)
             plot_path = preprocessor.create_visualization(filename=plot_filename)
             if not args.quiet:
                 print(f"Plot: {plot_path}")
         
         if not args.quiet:
             print(f"\n✅ Preprocessing complete!")
-            print(f"   Input variables: {len(results['input_variables'])}")
-            print(f"   Output variables: {len(results['output_variables'])}")
-            print(f"   Data shape: {results['data_shape']}")
+            print(f"   Normalized data: {artifacts.normalized_data_file}")
+            print(f"   Dimension matrix: {artifacts.dimension_matrix_file}")
+            print(f"   Basis vectors: {artifacts.basis_vectors_file}")
+            print(f"   Normalized lg data: {artifacts.normalized_lg_data_file}")
         
         return 0
         

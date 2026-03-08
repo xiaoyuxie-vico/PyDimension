@@ -1,5 +1,6 @@
 # Output directories
 output/
+output_*/
 *.csv
 
 # Images directory (for Hugging Face Spaces compatibility)

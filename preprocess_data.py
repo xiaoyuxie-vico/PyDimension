@@ -12,7 +12,7 @@ from pathlib import Path
 # Add pydimension to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from pydimension.data_preprocessing import DataPreprocessor, DataPreprocessingConfig
+from pydimension.data_preprocessing import DataPreprocessingConfig, run_dimensional_analysis_preprocessing
 
 
 def main():
@@ -20,7 +20,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(
-        description='Preprocess datasets: select variables, normalize data, and generate dimension matrices',
+        description='Preprocess datasets and run integrated dimensional analysis',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -113,11 +113,7 @@ Examples:
     
     # Create preprocessor and run
     try:
-        preprocessor = DataPreprocessor(config)
-        results = preprocessor.process(verbose=True)
-        
-        # Save results
-        normalized_path, matrix_path = preprocessor.save_results()
+        artifacts = run_dimensional_analysis_preprocessing(config, verbose=True)
         
         # Create visualization if requested
         if args.plot:
@@ -135,12 +131,18 @@ Examples:
                 if plot_filename is None:
                     plot_filename = 'data_preprocessing_plots.png'
             
+            from pydimension.data_preprocessing import DataPreprocessor
+
+            preprocessor = DataPreprocessor(config)
+            preprocessor.process(verbose=False)
             plot_path = preprocessor.create_visualization(filename=plot_filename)
             print(f"Plot: {plot_path}")
         
         print(f"\n=== Files Saved ===")
-        print(f"Normalized data: {normalized_path}")
-        print(f"Dimension matrix: {matrix_path}")
+        print(f"Normalized data: {artifacts.normalized_data_file}")
+        print(f"Dimension matrix: {artifacts.dimension_matrix_file}")
+        print(f"Basis vectors: {artifacts.basis_vectors_file}")
+        print(f"Normalized lg data: {artifacts.normalized_lg_data_file}")
         
         return 0
         
