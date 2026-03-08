@@ -14,7 +14,7 @@ A modular Python package for discovering **dimensionless relationships** (dimens
 ## Relationship to PyDimension v1.0
 
 - **This branch (`main`) – PyDimension**  
-  Modern, modular Python package (`pydimension/*`) with command-line tools, Python API, and a Streamlit web app for running full pipelines.
+  Modern, modular Python package (`pydimension/*`) with command-line tools, Python API and a Streamlit web app for running full pipelines.
 
 - **Legacy research code (`v1.0` branch) – PyDimension v1.0**  
   Original research notebooks and scripts for PDE discovery and case studies used in the paper (kept for reproducibility).
