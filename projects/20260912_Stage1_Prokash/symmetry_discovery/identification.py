@@ -3,18 +3,17 @@ Symmetry identification via competitive encoder-decoder training.
 
 For each candidate symmetry type ("translational", "rotational", "scaling"):
   1. Build a SymmetryEncoder that transforms X with the type-specific feature map.
-  2. Train encoder + decoder jointly (decoder warm-started from Task-3 weights).
+  2. Train encoder + decoder jointly (decoder always fresh) with cosine LR decay.
   3. Record the validation MSE.
 
-Training encoder and decoder jointly (with decoder warm-started from Task 3)
-ensures:
+Training with a fresh decoder (rather than a Task-3 warm-start) ensures an
+unbiased starting point for every type:
   - The correct symmetry type reaches a very low loss (the feature transform
     perfectly captures the signal).
   - Wrong symmetry types plateau at a higher loss (wrong feature space).
   - Encoder weights converge to the true physical coefficients.
 """
 
-import copy
 import numpy as np
 import torch
 import torch.multiprocessing
@@ -55,6 +54,9 @@ def _train_joint(
     """Train encoder and decoder jointly to minimise MSE(decoder(encoder(X)), y)."""
     params = list(encoder.parameters()) + list(decoder.parameters())
     optimizer = torch.optim.Adam(params, lr=lr, weight_decay=weight_decay)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=n_epochs, eta_min=lr * 0.01
+    )
     loss_fn   = nn.MSELoss()
 
     n = X_tr.shape[0]
@@ -71,6 +73,7 @@ def _train_joint(
                 optimizer.zero_grad()
                 loss_fn(decoder(encoder(X_gpu[idx])), y_gpu[idx]).backward()
                 optimizer.step()
+            scheduler.step()
     else:
         num_workers = min(4, torch.multiprocessing.cpu_count())
         loader = DataLoader(
@@ -91,6 +94,7 @@ def _train_joint(
                 optimizer.zero_grad()
                 loss_fn(decoder(encoder(xb)), yb).backward()
                 optimizer.step()
+            scheduler.step()
 
 
 def _val_mse(
@@ -128,9 +132,9 @@ def identify_symmetry(
     """
     Identify the symmetry type of the data by competitive encoder-decoder training.
 
-    For each symmetry type a SymmetryEncoder is trained jointly with a decoder
-    that is warm-started from the Task-3 decoder weights.  The type whose
-    (encoder, decoder) pair achieves the lowest validation MSE wins.
+    For each symmetry type a SymmetryEncoder is trained jointly with a fresh
+    randomly-initialised decoder.  The type whose (encoder, decoder) pair
+    achieves the lowest validation MSE wins.
 
     Parameters
     ----------
@@ -139,7 +143,7 @@ def identify_symmetry(
     n_latent : int
         Latent dimension from Task 3.
     decoder : nn.Module
-        Task-3 decoder used as weight initialiser (warm start).
+        Unused (kept for API compatibility). Each restart uses a fresh decoder.
     n_epochs : int
         Training epochs per encoder / restart.
     batch_size : int
@@ -195,16 +199,10 @@ def identify_symmetry(
             torch.manual_seed(seed + hash(sym_type) % 1000 + restart * 37)
 
             enc = SymmetryEncoder(sym_type, n_inputs, n_latent).to(_device)
-
-            # Warm-start decoder from Task-3 weights; train both jointly.
-            # This combines Task-3's learned y-representation with the
-            # encoder's symmetry-specific feature transform.
+            # Fresh decoder for each restart: avoids bias from Task-3 warm-start,
+            # which could favour whichever feature type the Task-3 autoencoder
+            # happened to converge to (often log-like for rotational data).
             dec = _make_decoder(n_latent, hidden_dim).to(_device)
-            if decoder is not None:
-                try:
-                    dec.load_state_dict(copy.deepcopy(decoder).state_dict())
-                except Exception:
-                    pass  # architecture mismatch — train from scratch
 
             _train_joint(enc, dec, X_tr, y_tr, n_epochs, batch_size, lr, weight_decay, _device)
 
