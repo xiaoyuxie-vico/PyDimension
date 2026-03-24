@@ -82,10 +82,11 @@ def test_1_3_translational_invariance():
         d = orth[:, col]
         X_shifted = X + eps * d[np.newaxis, :]
         Z_shifted = X_shifted @ W.T
-        # Recompute y from ground-truth formula
-        y_shifted = np.sin(Z_shifted[:, 0]) + 0.5 * Z_shifted[:, 0] ** 2
-        for i in range(1, W.shape[0]):
-            y_shifted = y_shifted + 0.3 * np.cos(Z_shifted[:, i])
+        # Recompute y from ground-truth formula (product of sin functions)
+        y_shifted = np.ones(len(X_shifted))
+        for i in range(W.shape[0]):
+            phase = i * np.pi / max(W.shape[0], 2)
+            y_shifted = y_shifted * np.sin(Z_shifted[:, i] + phase)
         diff = np.max(np.abs(y_shifted - y_orig))
         ok &= check(f"orbit dir {col} max|Δy|={diff:.2e}", diff < 1e-10)
     return ok

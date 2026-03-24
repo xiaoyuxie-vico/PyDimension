@@ -75,10 +75,14 @@ def generate_translational_data(
     # Latent representation: Z = X @ W.T  shape (n_samples, m_orbits)
     Z = X @ W.T
 
-    # Nonlinear output that depends only on latent Z
-    y_clean = np.sin(Z[:, 0]) + 0.5 * Z[:, 0] ** 2
-    for i in range(1, m_orbits):
-        y_clean = y_clean + 0.3 * np.cos(Z[:, i])
+    # Nonlinear output: product of sin functions across latents.
+    # A product y = sin(z1)*cos(z2)*... is truly multi-dimensional:
+    # it has zero linear (and zero quadratic) correlation with any 1D projection,
+    # so a 1D bottleneck fundamentally cannot predict it well.
+    y_clean = np.ones(n_samples)
+    for i in range(m_orbits):
+        phase = i * np.pi / max(m_orbits, 2)
+        y_clean = y_clean * np.sin(Z[:, i] + phase)
 
     # Additive Gaussian noise
     if noise_level > 0.0:
