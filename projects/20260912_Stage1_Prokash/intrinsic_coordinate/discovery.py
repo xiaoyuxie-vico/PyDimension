@@ -30,6 +30,7 @@ def _train_autoencoder(
     n_epochs: int,
     batch_size: int,
     lr: float,
+    device: torch.device,
 ) -> None:
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn   = nn.MSELoss()
@@ -39,6 +40,7 @@ def _train_autoencoder(
     model.train()
     for _ in range(n_epochs):
         for xb, yb in loader:
+            xb, yb = xb.to(device), yb.to(device)
             optimizer.zero_grad()
             pred = model(xb)
             loss = loss_fn(pred, yb)
@@ -58,6 +60,7 @@ def discover_latent_dimension(
     r2_threshold: float = 0.95,
     n_restarts: int = 3,
     seed: int = 0,
+    device: str = "auto",
 ) -> dict:
     """
     Sweep n_latent from 1 to max_latent, train an autoencoder for each,
@@ -90,7 +93,13 @@ def discover_latent_dimension(
         best_encoder     : nn.Module   accepts (batch, n_inputs) → (batch, n_latent)
         best_decoder     : nn.Module   accepts (batch, n_latent) → (batch, 1)
         metrics          : dict[int → {"R2": float, "MSE": float}]
+        device           : str         device used for training
     """
+    if device == "auto":
+        _device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    else:
+        _device = torch.device(device)
+
     torch.manual_seed(seed)
     np.random.seed(seed)
 
@@ -107,6 +116,8 @@ def discover_latent_dimension(
     metrics = {}
     models  = {}
 
+    X_val_dev = X_val.to(_device)
+
     for k in range(1, max_latent + 1):
         best_r2    = -np.inf
         best_model = None
@@ -114,19 +125,19 @@ def discover_latent_dimension(
         # Multiple restarts: keep best R² to reduce variance from random init
         for restart in range(n_restarts):
             torch.manual_seed(seed + k * 100 + restart)
-            model = IntrinsicCoordinateAutoencoder(n_inputs, k, hidden_dim)
-            _train_autoencoder(model, X_tr, y_tr, n_epochs, batch_size, lr)
+            model = IntrinsicCoordinateAutoencoder(n_inputs, k, hidden_dim).to(_device)
+            _train_autoencoder(model, X_tr, y_tr, n_epochs, batch_size, lr, _device)
 
             model.eval()
             with torch.no_grad():
-                y_pred_np = model(X_val).squeeze(1).numpy()
+                y_pred_np = model(X_val_dev).squeeze(1).cpu().numpy()
 
             r2 = _r2_score(y_val_np, y_pred_np)
             if r2 > best_r2:
                 best_r2    = r2
                 best_model = model
 
-        mse = float(np.mean((y_val_np - best_model(X_val).squeeze(1).detach().numpy()) ** 2))
+        mse = float(np.mean((y_val_np - best_model(X_val_dev).squeeze(1).detach().cpu().numpy()) ** 2))
         metrics[k] = {"R2": best_r2, "MSE": mse}
         models[k]  = best_model
 
@@ -151,4 +162,5 @@ def discover_latent_dimension(
         "best_encoder": best_model.encoder,
         "best_decoder": best_model.decoder,
         "metrics": metrics,
+        "device": str(_device),
     }
