@@ -142,10 +142,9 @@ def test_1_5_scaling_invariance():
 
     X_scaled = X * (lam ** s[np.newaxis, :])  # shape (200, 2)
 
-    # Recompute y from ground-truth formula
+    # Recompute y from ground-truth formula (uses log_pi, not pi)
     log_pi_scaled = np.log(X_scaled) @ E_mat.T
-    pi_scaled = np.exp(log_pi_scaled)
-    y_scaled = np.sin(pi_scaled[:, 0]) + 0.1 * pi_scaled[:, 0]
+    y_scaled = np.sin(log_pi_scaled[:, 0]) + 0.1 * log_pi_scaled[:, 0]
 
     diff = np.max(np.abs(y_scaled - y_orig))
     return check(f"max|Δy|={diff:.2e} (null-space direction s={s.round(4)})", diff < 1e-10)

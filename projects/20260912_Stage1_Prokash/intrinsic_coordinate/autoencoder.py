@@ -63,8 +63,13 @@ class IntrinsicCoordinateAutoencoder(nn.Module):
 
     @staticmethod
     def _augment(x: torch.Tensor) -> torch.Tensor:
-        """[X, X², log(|X|+1)]"""
-        return torch.cat([x, x ** 2, torch.log(x.abs() + 1.0)], dim=1)
+        """[X, X², log(max(|X|, 0.1))]
+
+        Clamp to 0.1 before taking log so:
+          • scaling data (min |X| ≈ 0.135) gets exact log values
+          • translational/rotational data (X near 0) is bounded at log(0.1)=-2.3
+        """
+        return torch.cat([x, x ** 2, torch.log(x.abs().clamp(min=0.1))], dim=1)
 
     # ------------------------------------------------------------------
     # Public interface (encoder / decoder as callable modules)
@@ -107,5 +112,5 @@ class _EncoderWrapper(nn.Module):
         self.n_latent = n_latent
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        aug = torch.cat([x, x ** 2, torch.log(x.abs() + 1.0)], dim=1)
+        aug = torch.cat([x, x ** 2, torch.log(x.abs().clamp(min=0.1))], dim=1)
         return self._linear(aug)

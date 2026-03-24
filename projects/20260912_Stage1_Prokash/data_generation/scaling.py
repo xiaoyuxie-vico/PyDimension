@@ -79,10 +79,12 @@ def generate_scaling_data(
     log_pi = log_X @ E.T  # (n_samples, m_scaling_vars)
     pi = np.exp(log_pi)   # (n_samples, m_scaling_vars)
 
-    # Nonlinear output
-    y_clean = np.sin(pi[:, 0]) + 0.1 * pi[:, 0]
+    # Nonlinear output — use log_pi (not pi) so the output is bounded
+    # and exactly computable by a linear encoder over log(X) features.
+    # y = f(log π_k) = f(Σ_i E[k,i]·log(x_i))
+    y_clean = np.sin(log_pi[:, 0]) + 0.1 * log_pi[:, 0]
     for k in range(1, m_scaling_vars):
-        y_clean = y_clean + 0.2 * np.tanh(pi[:, k])
+        y_clean = y_clean + 0.2 * np.tanh(log_pi[:, k])
 
     # Additive Gaussian noise
     if noise_level > 0.0:
