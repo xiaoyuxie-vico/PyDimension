@@ -11,6 +11,7 @@ with R² > threshold as fallback).
 
 import numpy as np
 import torch
+import torch.multiprocessing
 import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 
@@ -35,12 +36,22 @@ def _train_autoencoder(
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn   = nn.MSELoss()
     dataset   = TensorDataset(X_train, y_train)
-    loader    = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    num_workers = min(4, torch.multiprocessing.cpu_count())
+    loader    = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=(device.type == "cuda"),
+        prefetch_factor=2 if num_workers > 0 else None,
+        persistent_workers=num_workers > 0,
+    )
 
     model.train()
     for _ in range(n_epochs):
         for xb, yb in loader:
-            xb, yb = xb.to(device), yb.to(device)
+            xb = xb.to(device, non_blocking=True)
+            yb = yb.to(device, non_blocking=True)
             optimizer.zero_grad()
             pred = model(xb)
             loss = loss_fn(pred, yb)

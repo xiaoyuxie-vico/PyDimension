@@ -17,6 +17,7 @@ ensures:
 import copy
 import numpy as np
 import torch
+import torch.multiprocessing
 import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 
@@ -49,17 +50,29 @@ def _train_joint(
     batch_size: int,
     lr: float,
     weight_decay: float,
+    device: torch.device,
 ) -> None:
     """Train encoder and decoder jointly to minimise MSE(decoder(encoder(X)), y)."""
     params = list(encoder.parameters()) + list(decoder.parameters())
     optimizer = torch.optim.Adam(params, lr=lr, weight_decay=weight_decay)
     loss_fn   = nn.MSELoss()
-    loader    = DataLoader(TensorDataset(X_tr, y_tr), batch_size=batch_size, shuffle=True)
+    num_workers = min(4, torch.multiprocessing.cpu_count())
+    loader    = DataLoader(
+        TensorDataset(X_tr, y_tr),
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=(device.type == "cuda"),
+        prefetch_factor=2 if num_workers > 0 else None,
+        persistent_workers=num_workers > 0,
+    )
 
     encoder.train()
     decoder.train()
     for _ in range(n_epochs):
         for xb, yb in loader:
+            xb = xb.to(device, non_blocking=True)
+            yb = yb.to(device, non_blocking=True)
             optimizer.zero_grad()
             loss_fn(decoder(encoder(xb)), yb).backward()
             optimizer.step()
@@ -74,7 +87,7 @@ def _val_mse(
     encoder.eval()
     decoder.eval()
     with torch.no_grad():
-        pred = decoder(encoder(X_val)).squeeze(1).numpy()
+        pred = decoder(encoder(X_val)).squeeze(1).cpu().numpy()
     return float(np.mean((y_val_np - pred) ** 2))
 
 
@@ -95,6 +108,7 @@ def identify_symmetry(
     val_fraction: float = 0.2,
     n_restarts: int = 3,
     seed: int = 0,
+    device: str = "auto",
 ) -> dict:
     """
     Identify the symmetry type of the data by competitive encoder-decoder training.
@@ -136,6 +150,11 @@ def identify_symmetry(
         losses        : dict[str → float] — val MSE for each symmetry type
         encoders      : dict[str → SymmetryEncoder] — best encoder per type
     """
+    if device == "auto":
+        _device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    else:
+        _device = torch.device(device)
+
     torch.manual_seed(seed)
     np.random.seed(seed)
 
@@ -146,7 +165,7 @@ def identify_symmetry(
 
     X_tr     = torch.tensor(X[train_idx], dtype=torch.float32)
     y_tr     = torch.tensor(y[train_idx], dtype=torch.float32).unsqueeze(1)
-    X_val    = torch.tensor(X[val_idx],   dtype=torch.float32)
+    X_val    = torch.tensor(X[val_idx],   dtype=torch.float32).to(_device)
     y_val_np = y[val_idx]
 
     sym_types = ("translational", "rotational", "scaling")
@@ -160,19 +179,19 @@ def identify_symmetry(
         for restart in range(n_restarts):
             torch.manual_seed(seed + hash(sym_type) % 1000 + restart * 37)
 
-            enc = SymmetryEncoder(sym_type, n_inputs, n_latent)
+            enc = SymmetryEncoder(sym_type, n_inputs, n_latent).to(_device)
 
             # Warm-start decoder from Task-3 weights; train both jointly.
             # This combines Task-3's learned y-representation with the
             # encoder's symmetry-specific feature transform.
-            dec = _make_decoder(n_latent, hidden_dim)
+            dec = _make_decoder(n_latent, hidden_dim).to(_device)
             if decoder is not None:
                 try:
                     dec.load_state_dict(copy.deepcopy(decoder).state_dict())
                 except Exception:
                     pass  # architecture mismatch — train from scratch
 
-            _train_joint(enc, dec, X_tr, y_tr, n_epochs, batch_size, lr, weight_decay)
+            _train_joint(enc, dec, X_tr, y_tr, n_epochs, batch_size, lr, weight_decay, _device)
 
             val_loss = _val_mse(enc, dec, X_val, y_val_np)
             if val_loss < best_loss:

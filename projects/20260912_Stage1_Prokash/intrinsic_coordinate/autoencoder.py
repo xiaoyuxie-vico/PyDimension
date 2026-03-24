@@ -112,5 +112,4 @@ class _EncoderWrapper(nn.Module):
         self.n_latent = n_latent
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        aug = torch.cat([x, x ** 2, torch.log(x.abs().clamp(min=0.1))], dim=1)
-        return self._linear(aug)
+        return self._linear(IntrinsicCoordinateAutoencoder._augment(x))
