@@ -19,7 +19,7 @@ import numpy as np
 import torch
 import torch.multiprocessing
 import torch.nn as nn
-from torch.utils.data import TensorDataset, DataLoader
+from torch.utils.data import DataLoader, TensorDataset
 
 from .encoders import SymmetryEncoder
 
@@ -56,26 +56,41 @@ def _train_joint(
     params = list(encoder.parameters()) + list(decoder.parameters())
     optimizer = torch.optim.Adam(params, lr=lr, weight_decay=weight_decay)
     loss_fn   = nn.MSELoss()
-    num_workers = min(4, torch.multiprocessing.cpu_count())
-    loader    = DataLoader(
-        TensorDataset(X_tr, y_tr),
-        batch_size=batch_size,
-        shuffle=True,
-        num_workers=num_workers,
-        pin_memory=(device.type == "cuda"),
-        prefetch_factor=2 if num_workers > 0 else None,
-        persistent_workers=num_workers > 0,
-    )
 
-    encoder.train()
-    decoder.train()
-    for _ in range(n_epochs):
-        for xb, yb in loader:
-            xb = xb.to(device, non_blocking=True)
-            yb = yb.to(device, non_blocking=True)
-            optimizer.zero_grad()
-            loss_fn(decoder(encoder(xb)), yb).backward()
-            optimizer.step()
+    n = X_tr.shape[0]
+    if n <= 20_000:
+        # Small dataset: pre-load to GPU and batch manually — no worker overhead.
+        X_gpu = X_tr.to(device)
+        y_gpu = y_tr.to(device)
+        encoder.train()
+        decoder.train()
+        for _ in range(n_epochs):
+            perm = torch.randperm(n, device=device)
+            for start in range(0, n, batch_size):
+                idx = perm[start:start + batch_size]
+                optimizer.zero_grad()
+                loss_fn(decoder(encoder(X_gpu[idx])), y_gpu[idx]).backward()
+                optimizer.step()
+    else:
+        num_workers = min(4, torch.multiprocessing.cpu_count())
+        loader = DataLoader(
+            TensorDataset(X_tr, y_tr),
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=num_workers,
+            pin_memory=(device.type == "cuda"),
+            prefetch_factor=2 if num_workers > 0 else None,
+            persistent_workers=num_workers > 0,
+        )
+        encoder.train()
+        decoder.train()
+        for _ in range(n_epochs):
+            for xb, yb in loader:
+                xb = xb.to(device, non_blocking=True)
+                yb = yb.to(device, non_blocking=True)
+                optimizer.zero_grad()
+                loss_fn(decoder(encoder(xb)), yb).backward()
+                optimizer.step()
 
 
 def _val_mse(
