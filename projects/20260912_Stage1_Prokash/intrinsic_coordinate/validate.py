@@ -111,7 +111,8 @@ def test_3_6_decoder_shape():
         res     = _results[key]
         k       = res["optimal_n_latent"]
         decoder = res["best_decoder"]
-        z       = torch.zeros(8, k)
+        device  = next(decoder.parameters()).device
+        z       = torch.zeros(8, k, device=device)
         with torch.no_grad():
             out = decoder(z)
         ok &= check(f"{key} decoder output shape", out.shape == (8, 1), str(tuple(out.shape)))
