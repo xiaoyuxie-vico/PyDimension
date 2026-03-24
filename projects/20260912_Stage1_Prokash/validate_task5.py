@@ -194,15 +194,16 @@ dec_t = list(trans_t4["encoders"].values())[0]   # placeholder; we need the deco
 
 def _max_latent_shift(enc, generators, X_test, eps, sym_type):
     """Max Euclidean shift in latent space induced by applying each generator."""
+    dev = next(enc.parameters()).device
     max_shift = 0.0
     with torch.no_grad():
         for x in X_test:
-            x_t = torch.tensor(x, dtype=torch.float32).unsqueeze(0)
-            z0  = enc(x_t).numpy().flatten()
+            x_t = torch.tensor(x, dtype=torch.float32).unsqueeze(0).to(dev)
+            z0  = enc(x_t).cpu().numpy().flatten()
             for g in generators:
                 x_new = apply_generator(x, g, eps, sym_type)
-                x_new_t = torch.tensor(x_new, dtype=torch.float32).unsqueeze(0)
-                z1 = enc(x_new_t).numpy().flatten()
+                x_new_t = torch.tensor(x_new, dtype=torch.float32).unsqueeze(0).to(dev)
+                z1 = enc(x_new_t).cpu().numpy().flatten()
                 max_shift = max(max_shift, np.linalg.norm(z1 - z0))
     return max_shift
 
