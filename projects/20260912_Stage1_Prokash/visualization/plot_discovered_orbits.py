@@ -172,7 +172,16 @@ def _disc_orbit_single(sym, data, x_start=None, n_steps=400):
     d0, d1 = PLOT_DIMS[sym]
 
     if x_start is None:
-        x_start = np.median(data["X"], axis=0)
+        if sym == "rotational":
+            # X is standard-normal → coordinate-wise median ≈ 0, which makes
+            # every rotation expm(k·ε·A) @ x_start ≈ 0 (collapsed orbit).
+            # Instead pick the sample whose r = Σ cᵢ·xᵢ² is closest to the
+            # median r — that point has a typical non-zero radius.
+            c = np.array(data["coefficients"])
+            r_vals = (data["X"] ** 2) @ c
+            x_start = data["X"][np.argmin(np.abs(r_vals - np.median(r_vals)))]
+        else:
+            x_start = np.median(data["X"], axis=0)
 
     if sym == "translational":
         eps = 8.0 / n_steps
