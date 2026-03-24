@@ -35,28 +35,40 @@ def _train_autoencoder(
 ) -> None:
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn   = nn.MSELoss()
-    dataset   = TensorDataset(X_train, y_train)
-    num_workers = min(4, torch.multiprocessing.cpu_count())
-    loader    = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        num_workers=num_workers,
-        pin_memory=(device.type == "cuda"),
-        prefetch_factor=2 if num_workers > 0 else None,
-        persistent_workers=num_workers > 0,
-    )
+    n = len(X_train)
 
-    model.train()
-    for _ in range(n_epochs):
-        for xb, yb in loader:
-            xb = xb.to(device, non_blocking=True)
-            yb = yb.to(device, non_blocking=True)
-            optimizer.zero_grad()
-            pred = model(xb)
-            loss = loss_fn(pred, yb)
-            loss.backward()
-            optimizer.step()
+    # For small datasets: pre-load to GPU and batch manually.
+    # DataLoader worker overhead dominates when there are only a few batches.
+    if n <= 20_000:
+        X_dev = X_train.to(device)
+        Y_dev = y_train.to(device)
+        model.train()
+        for _ in range(n_epochs):
+            perm = torch.randperm(n, device=device)
+            for start in range(0, n, batch_size):
+                idx = perm[start:start + batch_size]
+                optimizer.zero_grad()
+                loss_fn(model(X_dev[idx]), Y_dev[idx]).backward()
+                optimizer.step()
+    else:
+        num_workers = min(4, torch.multiprocessing.cpu_count())
+        loader = DataLoader(
+            TensorDataset(X_train, y_train),
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=num_workers,
+            pin_memory=(device.type == "cuda"),
+            prefetch_factor=2 if num_workers > 0 else None,
+            persistent_workers=num_workers > 0,
+        )
+        model.train()
+        for _ in range(n_epochs):
+            for xb, yb in loader:
+                xb = xb.to(device, non_blocking=True)
+                yb = yb.to(device, non_blocking=True)
+                optimizer.zero_grad()
+                loss_fn(model(xb), yb).backward()
+                optimizer.step()
 
 
 def discover_latent_dimension(
