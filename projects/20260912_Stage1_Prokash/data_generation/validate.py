@@ -8,10 +8,11 @@ or:
 """
 
 import sys
+import os
 import numpy as np
 
-# Allow running from the repo root
-sys.path.insert(0, __file__.rsplit("/data_generation", 1)[0])
+# Allow running from the repo root (works on Windows and Linux)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from data_generation import (
     generate_translational_data,
