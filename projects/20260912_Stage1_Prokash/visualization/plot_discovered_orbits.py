@@ -131,14 +131,11 @@ def _true_orbit_rot(data, d0=0, d1=2):
     """
     c   = np.array(data["coefficients"])   # shape (n_inputs,)
     X   = data["X"]
-    # Total radius value at median point
-    r_total = np.median((X ** 2) @ c)
-    # Contribution from the non-plotted dims (held at median)
-    other_dims = [i for i in range(X.shape[1]) if i not in (d0, d1)]
-    r_other = float(np.median(
-        np.sum(c[other_dims] * X[:, other_dims] ** 2, axis=1)
-    )) if other_dims else 0.0
-    r_sub = max(r_total - r_other, 1e-6)   # radius in the 2-D subspace
+    # Radius in the projected 2-D subspace: r_sub = c[d0]*x_{d0}^2 + c[d1]*x_{d1}^2
+    # We take the median of r_sub directly (not median(total) - median(other),
+    # which is incorrect because median is not additive).
+    r_sub_vals = c[d0] * X[:, d0] ** 2 + c[d1] * X[:, d1] ** 2
+    r_sub = max(float(np.median(r_sub_vals)), 1e-6)
     # c[d0] == c[d1]  →  circle
     theta = np.linspace(0, 2 * np.pi, 400)
     return (np.sqrt(r_sub / c[d0]) * np.cos(theta),
@@ -175,10 +172,12 @@ def _disc_orbit_single(sym, data, x_start=None, n_steps=400):
         if sym == "rotational":
             # X is standard-normal → coordinate-wise median ≈ 0, which makes
             # every rotation expm(k·ε·A) @ x_start ≈ 0 (collapsed orbit).
-            # Instead pick the sample whose r = Σ cᵢ·xᵢ² is closest to the
-            # median r — that point has a typical non-zero radius.
+            # Pick the sample whose *projected-plane* radius
+            # r_proj = c[d0]*x_{d0}^2 + c[d1]*x_{d1}^2 is closest to the
+            # median r_proj, so the discovered orbit matches the true orbit's
+            # radius in the plotted subspace.
             c = np.array(data["coefficients"])
-            r_vals = (data["X"] ** 2) @ c
+            r_vals = c[d0] * data["X"][:, d0] ** 2 + c[d1] * data["X"][:, d1] ** 2
             x_start = data["X"][np.argmin(np.abs(r_vals - np.median(r_vals)))]
         else:
             x_start = np.median(data["X"], axis=0)
