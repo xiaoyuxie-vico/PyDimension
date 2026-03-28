@@ -442,9 +442,9 @@ def plot_results(X: np.ndarray, y: np.ndarray, results: dict, output_dir: str):
     ax = axes[0, 0]
     # Show log-scale distributions (physical variables span orders of magnitude)
     log_X = np.log10(np.abs(X) + 1e-12)
-    bp = ax.boxplot([log_X[:, i] for i in range(X.shape[1])],
-                     tick_labels=[n.replace("Tl-T0", "ΔT") for n in VARIABLE_NAMES],
-                     patch_artist=True)
+    short_labels = [n.replace("Tl-T0", "ΔT") for n in VARIABLE_NAMES]
+    bp = ax.boxplot([log_X[:, i] for i in range(X.shape[1])], patch_artist=True)
+    ax.set_xticklabels(short_labels)
     for patch in bp["boxes"]:
         patch.set_facecolor("#4C72B0")
         patch.set_alpha(0.6)
