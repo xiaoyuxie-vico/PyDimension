@@ -41,15 +41,10 @@ import sys
 import os
 import argparse
 import traceback
+import multiprocessing
 
 import numpy as np
 import torch
-import torch.multiprocessing
-
-# On Windows, multiprocessing workers can cause silent crashes.
-# Force the safe "spawn" start method and patch cpu_count to avoid worker use.
-if sys.platform == "win32":
-    torch.multiprocessing.set_start_method("spawn", force=True)
 
 # Add the Stage1 project to the path
 _here = os.path.dirname(os.path.abspath(__file__))
@@ -67,6 +62,12 @@ from preprocessing.normalize import normalize_data
 from intrinsic_coordinate.discovery import discover_latent_dimension
 from symmetry_discovery.identification import identify_symmetry
 from symmetry_discovery.generators import extract_generators, generator_orbit
+
+# On Windows, multiprocessing workers silently crash without freeze_support.
+# Also monkey-patch torch.multiprocessing.cpu_count to return 0 so that
+# DataLoader never spawns workers (all data fits in memory anyway).
+import torch.multiprocessing as _tmp
+_tmp.cpu_count = lambda: 0
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -504,6 +505,7 @@ def main():
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     try:
         main()
     except Exception:
