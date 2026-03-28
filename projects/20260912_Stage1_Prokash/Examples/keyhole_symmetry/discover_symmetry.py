@@ -53,10 +53,17 @@ import multiprocessing
 import numpy as np
 import torch
 
-# Add the Stage1 project to the path
+# Add the Stage1 project to the path — try multiple locations
 _here = os.path.dirname(os.path.abspath(__file__))
-_stage1 = os.path.join(os.path.dirname(_here), "..")
-sys.path.insert(0, _stage1)
+for _candidate in [
+    os.path.join(_here, "..", ".."),                     # inside repo: Examples/keyhole_symmetry/../../
+    os.path.join(_here, "..", "..", "projects", "20260912_Stage1_Prokash"),  # top-level examples/
+    _here,                                                # same directory as script
+]:
+    _candidate = os.path.abspath(_candidate)
+    if os.path.isdir(os.path.join(_candidate, "preprocessing")):
+        sys.path.insert(0, _candidate)
+        break
 
 try:
     import matplotlib
@@ -65,10 +72,17 @@ except (AttributeError, ImportError):
     pass
 import matplotlib.pyplot as plt
 
-from preprocessing.normalize import normalize_data
-from intrinsic_coordinate.discovery import discover_latent_dimension
-from symmetry_discovery.identification import identify_symmetry
-from symmetry_discovery.generators import extract_generators, generator_orbit
+try:
+    from preprocessing.normalize import normalize_data
+    from intrinsic_coordinate.discovery import discover_latent_dimension
+    from symmetry_discovery.identification import identify_symmetry
+    from symmetry_discovery.generators import extract_generators, generator_orbit
+except ImportError as e:
+    print(f"ERROR: Could not import Stage1 modules: {e}")
+    print(f"Make sure this script is run from the PyDimension repo, or copy the")
+    print(f"preprocessing/, intrinsic_coordinate/, and symmetry_discovery/ folders")
+    print(f"from projects/20260912_Stage1_Prokash/ into the same directory as this script.")
+    sys.exit(1)
 
 # Prevent silent multiprocessing crashes on Windows
 import torch.multiprocessing as _tmp
@@ -152,8 +166,6 @@ def load_csv_data(csv_path: str) -> dict:
         header = next(reader)
         rows = [row for row in reader]
 
-    data = np.array(rows, dtype=float)
-
     # Find columns matching our variables
     input_cols = []
     for var in VARIABLE_NAMES:
@@ -180,8 +192,9 @@ def load_csv_data(csv_path: str) -> dict:
     if output_col is None:
         raise ValueError(f"Could not find output column (e*, Ke, or e) in: {header}")
 
-    X = data[:, input_cols]
-    y = data[:, output_col]
+    # Extract only the numeric columns we need
+    X = np.array([[float(rows[r][c]) for c in input_cols] for r in range(len(rows))])
+    y = np.array([float(rows[r][output_col]) for r in range(len(rows))])
 
     print(f"  Loaded columns: {[header[i].strip() for i in input_cols]} -> {header[output_col].strip()}")
 
