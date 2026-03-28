@@ -92,15 +92,31 @@ _tmp.cpu_count = lambda: 0
 VARIABLE_NAMES = ["etaP", "Vs", "r0", "alpha", "rho", "cp", "Tl-T0"]
 VARIABLE_UNITS = ["W", "m/s", "m", "m²/s", "kg/m³", "J/(kg·K)", "K"]
 
-# Dimension matrix: rows = [Mass, Length, Time, Temperature]
-# Columns = [etaP, Vs, r0, alpha, rho, cp, Tl-T0]
-DIMENSION_MATRIX = np.array([
-    # M   L    T   Θ
-    [ 1,  0,  0,  0,  1,  0,  0],   # Mass
-    [ 2,  1,  1,  2, -3,  2,  0],   # Length
-    [-3, -1,  0, -1,  0, -2,  0],   # Time
-    [ 0,  0,  0,  0,  0, -1,  1],   # Temperature
-], dtype=float)
+# Known keyhole number from the literature (Eq. 12 in the paper):
+#
+#   Ke = 1/Π = (Tl-T0) · π · ρ · Cp · sqrt(α · Vs · r0³) / (ηP)
+#
+# Equivalently:  Π = ηP / ((Tl-T0) · π · ρ · Cp · sqrt(α · Vs · r0³))
+#
+# Log-space exponents for Π:
+#   etaP:+1, Vs:-0.5, r0:-1.5, alpha:-0.5, rho:-1, cp:-1, Tl-T0:-1
+#
+# The output e* (or Ke) is a function of this single dimensionless group.
+KNOWN_KE_EXPONENTS = np.array([1.0, -0.5, -1.5, -0.5, -1.0, -1.0, -1.0])
+KNOWN_KE_LABEL = "Ke ∝ etaP / ((Tl-T0)·ρ·Cp·√(α·Vs·r0³))"
+
+
+def compute_known_ke(X: np.ndarray) -> np.ndarray:
+    """
+    Compute the known keyhole number Ke from the 7 physical variables.
+
+    Ke = ηP / ((Tl-T0) · π · ρ · Cp · √(α · Vs · r0³))
+
+    This is 1/Π from Eq. (12) in the paper.
+    """
+    etaP, Vs, r0, alpha, rho, cp, Tl_T0 = [X[:, i] for i in range(7)]
+    Ke = etaP / (Tl_T0 * np.pi * rho * cp * np.sqrt(alpha * Vs * r0**3))
+    return Ke
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -350,6 +366,13 @@ def run_pipeline(X: np.ndarray, y: np.ndarray, args) -> dict:
         _interpret_scaling(W, generators)
         print()
 
+    # --- Compare against known Ke ---
+    print("=" * 60)
+    print("Step 5c: Comparison with known keyhole number Ke")
+    print("=" * 60)
+    _compare_with_known_ke(X, y, W if winner_type == "scaling" else None, results)
+    print()
+
     return results
 
 
@@ -395,6 +418,56 @@ def _validate_invariance(X, y, generators, sym_type, norm):
               f"({len(rel_changes)} valid samples)")
 
 
+def _compare_with_known_ke(X, y, W_scaling, results):
+    """Compare discovered symmetry against the known keyhole number Ke."""
+    Ke = compute_known_ke(X)
+    results["Ke"] = Ke
+
+    # R² of e* vs Ke (how well does the known group explain the data?)
+    from numpy.polynomial import polynomial as P
+    log_Ke = np.log(Ke + 1e-12)
+    # Fit e* = a + b*Ke + c*Ke² (polynomial in Ke)
+    coeffs = np.polyfit(Ke, y, 2)
+    y_pred_ke = np.polyval(coeffs, Ke)
+    ss_res = np.sum((y - y_pred_ke)**2)
+    ss_tot = np.sum((y - y.mean())**2)
+    r2_ke = 1 - ss_res / (ss_tot + 1e-12)
+
+    print(f"\n  Known keyhole number: {KNOWN_KE_LABEL}")
+    print(f"  Known exponents:     {dict(zip(VARIABLE_NAMES, KNOWN_KE_EXPONENTS))}")
+    print(f"  R²(e* vs Ke):        {r2_ke:.4f}  (polynomial fit)")
+    print(f"  Ke range:            [{Ke.min():.4g}, {Ke.max():.4g}]")
+
+    # Compare exponents if scaling was discovered
+    if W_scaling is not None and W_scaling.shape[0] >= 1:
+        w_discovered = W_scaling[0]
+        # Normalize both to unit length for direction comparison
+        w_known_norm = KNOWN_KE_EXPONENTS / np.linalg.norm(KNOWN_KE_EXPONENTS)
+        w_disc_norm = w_discovered / (np.linalg.norm(w_discovered) + 1e-12)
+
+        # Cosine similarity (sign-invariant: discovered may be -Ke instead of +Ke)
+        cos_sim = abs(np.dot(w_known_norm, w_disc_norm))
+
+        # Scale discovered exponents to match known (normalize by etaP exponent)
+        if abs(w_discovered[0]) > 1e-6:
+            scale = KNOWN_KE_EXPONENTS[0] / w_discovered[0]
+            w_rescaled = w_discovered * scale
+        else:
+            w_rescaled = w_discovered
+
+        print(f"\n  Discovered exponents (raw):     {np.round(w_discovered, 4)}")
+        print(f"  Discovered exponents (rescaled): {np.round(w_rescaled, 2)}")
+        print(f"  Known exponents:                 {KNOWN_KE_EXPONENTS}")
+        print(f"  Cosine similarity:               {cos_sim:.4f} (1.0 = perfect match)")
+
+        # Per-variable comparison
+        print(f"\n  Per-variable comparison (rescaled to etaP=1):")
+        print(f"  {'Variable':10s} {'Known':>8s} {'Discovered':>10s} {'Error':>8s}")
+        for j, name in enumerate(VARIABLE_NAMES):
+            err = abs(w_rescaled[j] - KNOWN_KE_EXPONENTS[j])
+            print(f"  {name:10s} {KNOWN_KE_EXPONENTS[j]:8.1f} {w_rescaled[j]:10.2f} {err:8.2f}")
+
+
 def _interpret_scaling(W, generators):
     """Interpret scaling weights as dimensionless groups."""
     print(f"  The encoder learns z = W · log|X|, where each row of W")
@@ -435,7 +508,7 @@ def plot_results(X: np.ndarray, y: np.ndarray, results: dict, output_dir: str):
     """Create a summary figure of the symmetry discovery results."""
     os.makedirs(output_dir, exist_ok=True)
 
-    fig, axes = plt.subplots(2, 3, figsize=(18, 11))
+    fig, axes = plt.subplots(2, 4, figsize=(22, 11))
     fig.suptitle("Keyhole Welding — Symmetry Discovery", fontsize=16, fontweight="bold")
 
     # --- (0,0) Variable distributions ---
@@ -538,6 +611,53 @@ def plot_results(X: np.ndarray, y: np.ndarray, results: dict, output_dir: str):
         ax.text(0.5, 0.5, f"Orbit visualization\nfor {winner_type} symmetry",
                 ha="center", va="center", transform=ax.transAxes)
         ax.set_title("Discovered Orbit")
+
+    # --- (0,3) Known Ke vs e* ---
+    ax = axes[0, 3]
+    Ke = results.get("Ke", compute_known_ke(X))
+    sc = ax.scatter(Ke, y, c="#4C72B0", s=15, alpha=0.6)
+    # Polynomial fit
+    sort_idx = np.argsort(Ke)
+    coeffs = np.polyfit(Ke, y, 2)
+    Ke_fit = np.linspace(Ke.min(), Ke.max(), 200)
+    y_fit = np.polyval(coeffs, Ke_fit)
+    ax.plot(Ke_fit, y_fit, "r-", lw=2, label="polynomial fit")
+    ss_res = np.sum((y - np.polyval(coeffs, Ke))**2)
+    ss_tot = np.sum((y - y.mean())**2)
+    r2_ke = 1 - ss_res / (ss_tot + 1e-12)
+    ax.set_xlabel("Known Ke (keyhole number)")
+    ax.set_ylabel("e* (eccentricity)")
+    ax.set_title(f"Known Ke vs e*  (R²={r2_ke:.3f})")
+    ax.legend(fontsize=9)
+
+    # --- (1,3) Exponent comparison: known vs discovered ---
+    ax = axes[1, 3]
+    if winner_type == "scaling":
+        W = results["winner_encoder"].weight_matrix
+        w_disc = W[0]
+        # Rescale to match known (normalize by etaP exponent)
+        if abs(w_disc[0]) > 1e-6:
+            w_rescaled = w_disc * (KNOWN_KE_EXPONENTS[0] / w_disc[0])
+        else:
+            w_rescaled = w_disc
+        x_pos = np.arange(len(VARIABLE_NAMES))
+        width = 0.35
+        ax.bar(x_pos - width/2, KNOWN_KE_EXPONENTS, width, label="Known Ke", color="#55A868", edgecolor="black")
+        ax.bar(x_pos + width/2, w_rescaled, width, label="Discovered", color="#DD8452", edgecolor="black")
+        ax.set_xticks(x_pos)
+        ax.set_xticklabels([n.replace("Tl-T0", "ΔT") for n in VARIABLE_NAMES], rotation=45, ha="right")
+        ax.set_ylabel("Exponent")
+        cos_sim = abs(np.dot(
+            KNOWN_KE_EXPONENTS / np.linalg.norm(KNOWN_KE_EXPONENTS),
+            w_disc / (np.linalg.norm(w_disc) + 1e-12)
+        ))
+        ax.set_title(f"Exponent Comparison (cos sim={cos_sim:.3f})")
+        ax.legend(fontsize=9)
+        ax.axhline(0, color="gray", lw=0.5)
+    else:
+        ax.text(0.5, 0.5, "Scaling not detected\n(no exponent comparison)",
+                ha="center", va="center", transform=ax.transAxes)
+        ax.set_title("Exponent Comparison")
 
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plot_path = os.path.join(output_dir, "keyhole_symmetry_discovery.png")
