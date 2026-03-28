@@ -40,9 +40,16 @@ Usage
 import sys
 import os
 import argparse
+import traceback
 
 import numpy as np
 import torch
+import torch.multiprocessing
+
+# On Windows, multiprocessing workers can cause silent crashes.
+# Force the safe "spawn" start method and patch cpu_count to avoid worker use.
+if sys.platform == "win32":
+    torch.multiprocessing.set_start_method("spawn", force=True)
 
 # Add the Stage1 project to the path
 _here = os.path.dirname(os.path.abspath(__file__))
@@ -175,6 +182,7 @@ def run_pipeline(X: np.ndarray, y: np.ndarray, args) -> dict:
     print("=" * 60)
     print("Step 2: Discovering intrinsic latent dimension")
     print("=" * 60)
+    sys.stdout.flush()
     res_latent = discover_latent_dimension(
         X_norm, y_norm,
         max_latent=4,
@@ -496,4 +504,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        traceback.print_exc()
+        sys.exit(1)
