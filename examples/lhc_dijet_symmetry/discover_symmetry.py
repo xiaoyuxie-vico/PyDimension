@@ -49,8 +49,11 @@ _here = os.path.dirname(os.path.abspath(__file__))
 _stage1 = os.path.join(os.path.dirname(_here), "..", "projects", "20260912_Stage1_Prokash")
 sys.path.insert(0, _stage1)
 
-import matplotlib
-matplotlib.use("Agg")
+try:
+    import matplotlib
+    matplotlib.use("Agg")
+except (AttributeError, ImportError):
+    pass
 import matplotlib.pyplot as plt
 
 from preprocessing.normalize import normalize_data
