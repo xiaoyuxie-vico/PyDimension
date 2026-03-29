@@ -12,7 +12,7 @@ seven physical variables with four fundamental dimensions (M, L, T, K):
 | Variable | Symbol | Units | Dimensions |
 |----------|--------|-------|------------|
 | Absorbed power | `etaP` | W | kg·m²·s⁻³ |
-| Welding speed | `Vs` | m/s | m·s⁻¹ |
+| Laser speed | `Vs` | m/s | m·s⁻¹ |
 | Beam radius | `r0` | m | m |
 | Thermal diffusivity | `alpha` | m²/s | m²·s⁻¹ |
 | Density | `rho` | kg/m³ | kg·m⁻³ |
