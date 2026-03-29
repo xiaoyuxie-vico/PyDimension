@@ -297,7 +297,7 @@ def plot_results(X, y, results, output_dir):
     sym_res = results["symmetry"]
 
     fig, axes = plt.subplots(1, 3, figsize=(18, 5.5))
-    fig.suptitle("Keyhole Welding — Symmetry Discovery", fontsize=15, fontweight="bold")
+    fig.suptitle("Keyhole — Symmetry Discovery", fontsize=15, fontweight="bold")
 
     # --- Panel 1: Known Ke vs e* ---
     ax = axes[0]
@@ -309,7 +309,7 @@ def plot_results(X, y, results, output_dir):
     ss_tot = np.sum((y - y.mean())**2)
     r2 = 1 - ss_res / (ss_tot + 1e-12)
     ax.set_xlabel("Ke (known keyhole number)", fontsize=11)
-    ax.set_ylabel("e* (eccentricity)", fontsize=11)
+    ax.set_ylabel("e*", fontsize=11)
     ax.set_title(f"Known Ke vs e*   (R² = {r2:.3f})", fontsize=12)
     ax.legend(fontsize=9)
 
