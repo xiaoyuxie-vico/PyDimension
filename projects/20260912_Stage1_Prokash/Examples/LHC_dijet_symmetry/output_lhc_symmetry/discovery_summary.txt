@@ -1,0 +1,30 @@
+LHC Dijet Symmetry Discovery — Summary
+==================================================
+
+Events: 20000
+Features: (p1x, p1y, p2x, p2y)
+Output: dijet transverse mass m_jj_T
+
+Optimal latent dimension: 1
+  k=1: R2=0.9964
+  k=2: R2=0.9986
+  k=3: R2=0.9990
+  k=4: R2=0.9991
+
+Discovered symmetry: rotational
+  rotational: MSE=0.005315
+  scaling: MSE=0.537293
+  translational: MSE=0.766814
+
+Encoder coefficients: [0.32087246 0.32245958 0.4557916  0.4510363 ]
+Number of generators: 2
+  Generator 1:
+    [0.0, -1.0, 0.0, 0.0]
+    [1.0, 0.0, 0.0, 0.0]
+    [0.0, 0.0, 0.0, 0.0]
+    [0.0, 0.0, 0.0, 0.0]
+  Generator 2:
+    [0.0, 0.0, 0.0, 0.0]
+    [0.0, 0.0, 0.0, 0.0]
+    [0.0, 0.0, 0.0, 1.0]
+    [0.0, 0.0, -1.0, 0.0]
