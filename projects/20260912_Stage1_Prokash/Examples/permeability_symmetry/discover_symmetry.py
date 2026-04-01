@@ -3,14 +3,12 @@ Discover symmetry in porous media permeability using Stage1.
 
 Physics
 -------
-Different circular porous media geometries are characterised by:
-    - Angle      : orientation (degrees)
-    - Porosity   : void fraction (%)
-    - Surface_A  : specific surface area
+Each row belongs to one of 180 circular porous media geometries.
+Within each geometry (fixed Porosity & Surface_A), permeability is
+measured at angles 0, 10, 20, ..., 360 and repeats every 180 degrees.
 
-For each geometry, Permeability_X repeats every 180 degrees in angle.
-We encode this known periodicity by decomposing angle into:
-    cos(2θ) and sin(2θ)    (period = 180°)
+We encode this known 180-degree periodicity by decomposing angle into:
+    cos(2θ) and sin(2θ)
 
 Input features to the pipeline (4 total):
     [cos(2θ), sin(2θ), Porosity, Surface_A]
@@ -18,7 +16,6 @@ Input features to the pipeline (4 total):
 The pipeline discovers:
     1. Symmetry type (translational / rotational / scaling)
     2. Lie-algebra generators
-    3. Closed-form equation: Perm_X = f(Angle, Porosity, Surface_A)
 
 Usage
 -----
@@ -65,32 +62,46 @@ except ImportError as e:
 import torch.multiprocessing as _tmp
 _tmp.cpu_count = lambda: 0
 
-# After decomposition: [cos(2θ), sin(2θ), Porosity, Surface_A]
 FEATURE_NAMES = ["cos(2θ)", "sin(2θ)", "Porosity", "Surface_A"]
-RAW_NAMES = ["Angle", "Porosity", "Surface_A"]
 
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Data loading
 # ──────────────────────────────────────────────────────────────────────────────
 
-def generate_synthetic_data(n_samples=500, seed=42):
-    """Synthetic data: multiple geometries, permeability repeats every 180°."""
+def generate_synthetic_data(n_geometries=180, seed=42):
+    """
+    Synthetic data: 180 geometries x 37 angles (0-360 in 10° steps) = 6660 rows.
+    Each geometry has fixed Porosity and Surface_A.
+    Permeability oscillates with 180° period within each geometry.
+    """
     rng = np.random.default_rng(seed)
-    angle     = rng.uniform(0, 350, n_samples)
-    porosity  = rng.uniform(60, 63, n_samples)
-    surface_a = rng.uniform(5800, 6600, n_samples)
+    angles = np.arange(0, 370, 10)  # 37 angles
+    n_angles = len(angles)
 
-    angle_rad = np.radians(angle)
-    # Permeability depends on all 3 variables with 180° periodicity in angle
-    y = (3.2
-         + 0.05 * (porosity - 61)
-         + 0.0003 * (surface_a - 6200)
-         + 0.30 * np.cos(2 * angle_rad)
-         + 0.10 * np.sin(2 * angle_rad)
-         + rng.normal(0, 0.04, n_samples))
+    all_angle = []
+    all_porosity = []
+    all_surface_a = []
+    all_y = []
 
-    return angle, porosity, surface_a, y
+    for i in range(n_geometries):
+        por = rng.uniform(60, 63)
+        sa = rng.uniform(5800, 6600)
+        amp = rng.uniform(0.1, 0.5)
+        phase = rng.uniform(0, 180)
+
+        angle_rad = np.radians(angles)
+        baseline = 3.2 + 0.05 * (por - 61) + 0.0003 * (sa - 6200)
+        perm = baseline + amp * np.cos(2 * angle_rad - np.radians(2 * phase))
+        perm += rng.normal(0, 0.03, n_angles)
+
+        all_angle.extend(angles)
+        all_porosity.extend([por] * n_angles)
+        all_surface_a.extend([sa] * n_angles)
+        all_y.extend(perm)
+
+    return (np.array(all_angle), np.array(all_porosity),
+            np.array(all_surface_a), np.array(all_y))
 
 
 def load_csv_data(csv_path):
@@ -118,7 +129,6 @@ def load_csv_data(csv_path):
             perm_col = col
 
     if not all([angle_col, porosity_col, surface_col, perm_col]):
-        # Positional fallback: Index, Angle, Porosity, Surface_A, Permeability_X
         angle_col = df.columns[1]
         porosity_col = df.columns[2]
         surface_col = df.columns[3]
@@ -138,7 +148,7 @@ def load_data(args):
     """Load data, decompose angle into cos(2θ), sin(2θ)."""
     if args.synthetic:
         print("Generating synthetic data...")
-        angle, porosity, surface_a, y = generate_synthetic_data(args.n_samples, args.seed)
+        angle, porosity, surface_a, y = generate_synthetic_data(args.n_geometries, args.seed)
     else:
         data_path = args.data
         if not os.path.exists(data_path):
@@ -148,9 +158,8 @@ def load_data(args):
             angle, porosity, surface_a, y = load_csv_data(data_path)
         else:
             print(f"'{args.data}' not found. Using synthetic.")
-            angle, porosity, surface_a, y = generate_synthetic_data(args.n_samples, args.seed)
+            angle, porosity, surface_a, y = generate_synthetic_data(args.n_geometries, args.seed)
 
-    # Decompose angle with known 180° periodicity
     angle_rad = np.radians(angle)
     X = np.column_stack([
         np.cos(2 * angle_rad),
@@ -172,90 +181,99 @@ def load_data(args):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Pipeline
+# Pipeline (minmax normalization only)
 # ──────────────────────────────────────────────────────────────────────────────
 
 def run_pipeline(raw, X, y, args):
-    """Sweep normalizations, discover symmetry, extract equation."""
-    methods = ["standard", "minmax", "robust"]
-    all_results = {}
+    """Run Stage1 pipeline with minmax normalization."""
 
+    # --- Normalize ---
     print("=" * 60)
-    print("Normalization & Symmetry Sweep")
+    print("Step 1: Normalizing data (minmax)")
     print("=" * 60)
+    sys.stdout.flush()
+    norm = normalize_data(X, y, method="minmax")
+    X_norm, y_norm = norm["X_normalized"], norm["y_normalized"]
+    print(f"  X range: [{X_norm.min():.3f}, {X_norm.max():.3f}]")
+    print()
 
-    for method in methods:
-        print(f"\n--- {method} ---")
-        sys.stdout.flush()
-        norm = normalize_data(X, y, method=method)
-        X_norm, y_norm = norm["X_normalized"], norm["y_normalized"]
-
-        res_latent = discover_latent_dimension(
-            X_norm, y_norm, max_latent=3,
-            n_epochs=args.latent_epochs, n_restarts=args.n_restarts, seed=args.seed,
-        )
-        n_latent = res_latent["optimal_n_latent"]
-
-        res_sym = identify_symmetry(
-            X_norm, y_norm, n_latent=n_latent, decoder=res_latent["best_decoder"],
-            n_epochs=args.sym_epochs, n_restarts=args.n_restarts, seed=args.seed,
-        )
-
-        print(f"  Latent dim: {n_latent}")
-        for stype, loss in sorted(res_sym["losses"].items(), key=lambda kv: kv[1]):
-            marker = " <--" if stype == res_sym["symmetry_type"] else ""
-            print(f"    {stype:15s}: {loss:.6f}{marker}")
-
-        all_results[method] = {
-            "normalization": norm, "latent": res_latent, "symmetry": res_sym,
-        }
-
-    # Summary
-    print("\n" + "=" * 60)
-    print("SWEEP SUMMARY")
+    # --- Discover latent dimension ---
     print("=" * 60)
-    best_method = None
-    best_loss = np.inf
-    for method in methods:
-        sym = all_results[method]["symmetry"]
-        loss = min(sym["losses"].values())
-        losses_sorted = sorted(sym["losses"].values())
-        gap = losses_sorted[1] / (losses_sorted[0] + 1e-12) if len(losses_sorted) >= 2 else 0
-        print(f"  {method:<10} {sym['symmetry_type']:<16} MSE={loss:.6f}  gap={gap:.1f}x")
-        if loss < best_loss:
-            best_loss = loss
-            best_method = method
-    print(f"\n  Best: {best_method}")
+    print("Step 2: Discovering intrinsic latent dimension")
+    print("=" * 60)
+    sys.stdout.flush()
+    res_latent = discover_latent_dimension(
+        X_norm, y_norm, max_latent=3,
+        n_epochs=args.latent_epochs, n_restarts=args.n_restarts, seed=args.seed,
+    )
+    n_latent = res_latent["optimal_n_latent"]
+    print(f"\n  Optimal latent dimension: {n_latent}")
+    for k, m in res_latent["metrics"].items():
+        print(f"    k={k}: R2={m['R2']:.4f}")
+    print()
 
-    # Best results
-    norm = all_results[best_method]["normalization"]
-    res_latent = all_results[best_method]["latent"]
-    res_sym = all_results[best_method]["symmetry"]
+    # --- Identify symmetry type ---
+    print("=" * 60)
+    print("Step 3: Identifying symmetry type")
+    print("=" * 60)
+    sys.stdout.flush()
+    res_sym = identify_symmetry(
+        X_norm, y_norm, n_latent=n_latent, decoder=res_latent["best_decoder"],
+        n_epochs=args.sym_epochs, n_restarts=args.n_restarts, seed=args.seed,
+    )
+    print(f"\n  Detected symmetry: {res_sym['symmetry_type']}")
+    for stype, loss in sorted(res_sym["losses"].items(), key=lambda kv: kv[1]):
+        marker = " <--" if stype == res_sym["symmetry_type"] else ""
+        print(f"    {stype:15s}: {loss:.6f}{marker}")
+    sorted_losses = sorted(res_sym["losses"].values())
+    if len(sorted_losses) >= 2 and sorted_losses[0] > 0:
+        print(f"  Loss gap: {sorted_losses[1] / sorted_losses[0]:.1f}x")
+    print()
+
+    # --- Extract generators ---
+    print("=" * 60)
+    print("Step 4: Extracting Lie-algebra generators")
+    print("=" * 60)
     winner_type = res_sym["symmetry_type"]
     winner_encoder = res_sym["encoders"][winner_type]
     W = winner_encoder.weight_matrix
     generators = extract_generators(winner_type, winner_encoder)
 
-    print(f"\n  Symmetry: {winner_type}")
-    print(f"  Latent dim: {res_latent['optimal_n_latent']}")
+    print(f"  Symmetry type: {winner_type}")
     print(f"  Generators: {len(generators)}")
-    print(f"  Encoder weights W:")
+    print(f"\n  Encoder weights W:")
     for row_i in range(W.shape[0]):
         parts = [f"{FEATURE_NAMES[j]}:{W[row_i, j]:+.4f}" for j in range(W.shape[1])]
         print(f"    z{row_i+1}: [{', '.join(parts)}]")
 
     # Generator interpretation
-    if generators:
-        print(f"\n  Generator interpretation:")
+    print(f"\n  Physical interpretation of generators:")
+    if winner_type == "translational" and generators:
+        print(f"  Each generator: x -> x + eps*g preserves permeability.\n")
         for i, g in enumerate(generators):
             if g.ndim == 1:
                 parts = [f"{FEATURE_NAMES[j]}: {g[j]:+.3f}"
                          for j in range(len(g)) if abs(g[j]) > 0.05]
                 print(f"    G{i+1}: [{', '.join(parts)}]")
+    elif winner_type == "rotational" and generators:
+        print(f"  Each generator: rotation in a 2D plane.\n")
+        for i, g in enumerate(generators):
+            if g.ndim == 2:
+                print(f"    G{i+1}:")
+                for a in range(g.shape[0]):
+                    for b in range(a + 1, g.shape[1]):
+                        if abs(g[a, b]) > 0.01:
+                            print(f"      Rotation in ({FEATURE_NAMES[a]}, {FEATURE_NAMES[b]}) plane")
+    elif winner_type == "scaling" and generators:
+        print(f"  Each generator: x -> x*exp(eps*s) in log-space.\n")
+        for i, g in enumerate(generators):
+            if g.ndim == 1:
+                parts = [f"{FEATURE_NAMES[j]} x exp({g[j]:+.3f}*eps)"
+                         for j in range(len(g)) if abs(g[j]) > 0.05]
+                print(f"    G{i+1}: [{', '.join(parts)}]")
+    print()
 
     results = {
-        "all_results": all_results,
-        "best_method": best_method,
         "normalization": norm,
         "latent": res_latent,
         "symmetry": res_sym,
@@ -264,230 +282,112 @@ def run_pipeline(raw, X, y, args):
         "generators": generators,
         "W": W,
     }
-
-    # Equation discovery
-    print("\n" + "=" * 60)
-    print("Equation Discovery")
-    print("=" * 60)
-    discover_equation(raw, X, y, results)
-
     return results
 
 
-def discover_equation(raw, X, y, results):
-    """
-    Extract closed-form equation: Perm_X = f(Angle, Porosity, Surface_A).
-
-    Uses direct harmonic + linear regression, bypassing the neural decoder,
-    to get a fully interpretable equation.
-    """
-    angle = raw["angle"]
-    porosity = raw["porosity"]
-    surface_a = raw["surface_a"]
-    angle_rad = np.radians(angle)
-
-    # Build basis: constant + cos(2θ) + sin(2θ) + Porosity + Surface_A
-    # Then try adding higher harmonics and cross terms
-    print(f"\n  Fitting Perm_X = f(Angle, Porosity, Surface_A):")
-
-    models = {}
-
-    # Model 1: Linear in all features (no harmonics)
-    B1 = np.column_stack([np.ones(len(y)), porosity, surface_a])
-    names1 = ["1", "Porosity", "Surface_A"]
-    c1, _, _, _ = np.linalg.lstsq(B1, y, rcond=None)
-    r2_1 = _r2(y, B1 @ c1)
-    models["linear (no angle)"] = (c1, names1, r2_1)
-    print(f"    Linear (no angle):        R² = {r2_1:.6f}")
-
-    # Model 2: + cos(2θ), sin(2θ)
-    B2 = np.column_stack([np.ones(len(y)), np.cos(2 * angle_rad), np.sin(2 * angle_rad),
-                          porosity, surface_a])
-    names2 = ["1", "cos(2θ)", "sin(2θ)", "Porosity", "Surface_A"]
-    c2, _, _, _ = np.linalg.lstsq(B2, y, rcond=None)
-    r2_2 = _r2(y, B2 @ c2)
-    models["+ cos(2θ), sin(2θ)"] = (c2, names2, r2_2)
-    print(f"    + cos(2θ), sin(2θ):       R² = {r2_2:.6f}")
-
-    # Model 3: + cos(4θ), sin(4θ) (2nd harmonic of 180°)
-    B3 = np.column_stack([B2, np.cos(4 * angle_rad), np.sin(4 * angle_rad)])
-    names3 = names2 + ["cos(4θ)", "sin(4θ)"]
-    c3, _, _, _ = np.linalg.lstsq(B3, y, rcond=None)
-    r2_3 = _r2(y, B3 @ c3)
-    models["+ cos(4θ), sin(4θ)"] = (c3, names3, r2_3)
-    print(f"    + cos(4θ), sin(4θ):       R² = {r2_3:.6f}")
-
-    # Model 4: + cos(6θ), sin(6θ) (3rd harmonic)
-    B4 = np.column_stack([B3, np.cos(6 * angle_rad), np.sin(6 * angle_rad)])
-    names4 = names3 + ["cos(6θ)", "sin(6θ)"]
-    c4, _, _, _ = np.linalg.lstsq(B4, y, rcond=None)
-    r2_4 = _r2(y, B4 @ c4)
-    models["+ cos(6θ), sin(6θ)"] = (c4, names4, r2_4)
-    print(f"    + cos(6θ), sin(6θ):       R² = {r2_4:.6f}")
-
-    # Pick simplest model with R² > 0.90, or best overall
-    best_name = None
-    best_r2 = -np.inf
-    for name, (c, names, r2) in models.items():
-        if r2 > best_r2:
-            best_r2 = r2
-            best_name = name
-    # Prefer simpler if R² > 0.90
-    for name, (c, names, r2) in models.items():
-        if r2 > 0.90:
-            best_name = name
-            break
-
-    best_c, best_names, best_r2 = models[best_name]
-
-    # Print equation
-    print(f"\n  Best model: {best_name} (R² = {best_r2:.6f})")
-
-    # Amplitude-phase for angular terms
-    cos2_coeff = sin2_coeff = 0.0
-    for c_val, name in zip(best_c, best_names):
-        if name == "cos(2θ)":
-            cos2_coeff = c_val
-        elif name == "sin(2θ)":
-            sin2_coeff = c_val
-    if abs(cos2_coeff) > 1e-8 or abs(sin2_coeff) > 1e-8:
-        amp = np.sqrt(cos2_coeff**2 + sin2_coeff**2)
-        phase = np.degrees(np.arctan2(sin2_coeff, cos2_coeff))
-        print(f"\n  Angular term: {cos2_coeff:.4f}·cos(2θ) + {sin2_coeff:.4f}·sin(2θ)")
-        print(f"              = {amp:.4f}·cos(2θ - {phase:.1f}°)")
-        print(f"              Period = 180°")
-
-    # Full equation
-    print(f"\n  ┌──────────────────────────────────────────────────────────────┐")
-    print(f"  │  DISCOVERED EQUATION                                         │")
-    print(f"  │                                                              │")
-    terms = []
-    for c_val, name in zip(best_c, best_names):
-        if abs(c_val) < 1e-8:
-            continue
-        if name == "1":
-            terms.append(f"{c_val:.4f}")
-        else:
-            terms.append(f"{c_val:+.4f}·{name}")
-    eq = " ".join(terms)
-    print(f"  │  Perm_X = {eq}")
-    print(f"  │                                                              │")
-    print(f"  │  where θ = Angle (degrees)                                   │")
-    print(f"  │  R² = {best_r2:.4f}                                                │")
-    print(f"  └──────────────────────────────────────────────────────────────┘")
-
-    results["equation"] = {
-        "coeffs": best_c,
-        "names": best_names,
-        "R2": best_r2,
-        "model_name": best_name,
-    }
-
-
-def _r2(y_true, y_pred):
-    ss_res = np.sum((y_true - y_pred) ** 2)
-    ss_tot = np.sum((y_true - y_true.mean()) ** 2)
-    return 1 - ss_res / (ss_tot + 1e-12)
-
-
 # ──────────────────────────────────────────────────────────────────────────────
-# Visualization
+# Visualization (3 panels)
 # ──────────────────────────────────────────────────────────────────────────────
 
 def plot_results(raw, X, y, results, output_dir):
-    """4-panel figure."""
+    """3-panel figure: raw data, symmetry losses, generator orbits."""
     os.makedirs(output_dir, exist_ok=True)
     angle = raw["angle"]
     sym_res = results["symmetry"]
-    all_results = results["all_results"]
+    generators = results["generators"]
+    winner_type = results["winner_type"]
+    norm = results["normalization"]
+    W = results["W"]
 
-    fig, axes = plt.subplots(1, 4, figsize=(22, 5))
-    fig.suptitle("Porous Media Permeability — Symmetry & Equation Discovery",
-                 fontsize=14, fontweight="bold")
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5.5))
+    fig.suptitle("Porous Media Permeability — Symmetry Discovery",
+                 fontsize=15, fontweight="bold")
 
     # Panel 1: Raw data (Perm vs Angle, colored by Porosity)
     ax = axes[0]
-    sc = ax.scatter(angle, y, c=raw["porosity"], cmap="viridis", s=25, alpha=0.7,
+    sc = ax.scatter(angle, y, c=raw["porosity"], cmap="viridis", s=8, alpha=0.5,
                     edgecolors="none")
     fig.colorbar(sc, ax=ax, label="Porosity", fraction=0.046, pad=0.04)
     ax.set_xlabel("Angle (degrees)", fontsize=11)
     ax.set_ylabel("Permeability_X", fontsize=11)
     ax.set_title("Raw Data (color=Porosity)", fontsize=12)
 
-    # Panel 2: Normalization sweep
+    # Panel 2: Symmetry losses
     ax = axes[1]
-    methods = list(all_results.keys())
-    sym_types = ["translational", "rotational", "scaling"]
-    x_pos = np.arange(len(methods))
-    width = 0.25
-    for i, stype in enumerate(sym_types):
-        vals = [all_results[m]["symmetry"]["losses"].get(stype, 1.0) for m in methods]
-        bars = ax.bar(x_pos + i * width, vals, width, label=stype, alpha=0.8)
-        for bar, v in zip(bars, vals):
-            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height(),
-                    f"{v:.4f}", ha="center", va="bottom", fontsize=7, rotation=45)
-    ax.set_xticks(x_pos + width)
-    ax.set_xticklabels(methods)
-    ax.set_ylabel("Validation MSE", fontsize=10)
-    ax.set_title("Normalization Sweep", fontsize=12)
-    ax.legend(fontsize=8)
-
-    # Panel 3: Symmetry losses (best)
-    ax = axes[2]
     types = list(sym_res["losses"].keys())
     losses = [sym_res["losses"][t] for t in types]
     colors = ["#55A868" if t == sym_res["symmetry_type"] else "#DD8452" for t in types]
     bars = ax.bar(types, losses, color=colors, edgecolor="black", lw=1)
-    ax.set_ylabel("Validation MSE", fontsize=10)
-    ax.set_title(f"Winner: {sym_res['symmetry_type']} ({results['best_method']})", fontsize=12)
+    ax.set_ylabel("Validation MSE", fontsize=11)
+    ax.set_title(f"Symmetry Type (winner: {sym_res['symmetry_type']})", fontsize=12)
     for bar, loss in zip(bars, losses):
         ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height(),
                 f"{loss:.4f}", ha="center", va="bottom", fontsize=9)
 
-    # Panel 4: Equation fit overlay
-    ax = axes[3]
-    ax.scatter(angle, y, c="#4C72B0", s=25, alpha=0.7, edgecolors="none", label="data")
+    # Panel 3: Generator orbits
+    ax = axes[2]
+    if generators:
+        g = generators[0]
 
-    if "equation" in results and results["equation"]:
-        eq = results["equation"]
-        coeffs = eq["coeffs"]
-        names = eq["names"]
+        if g.ndim == 1:
+            # Pick two most important features
+            abs_g = np.abs(g)
+            top2 = np.argsort(abs_g)[-2:][::-1]
+            d0, d1 = top2[0], top2[1]
 
-        # Evaluate fit on fine angle grid at mean porosity/surface_a
-        angle_fit = np.linspace(0, 360, 500)
-        angle_fit_rad = np.radians(angle_fit)
-        por_mean = raw["porosity"].mean()
-        sa_mean = raw["surface_a"].mean()
+            sc = ax.scatter(X[:, d0], X[:, d1], c=y, cmap="viridis", s=8, alpha=0.4,
+                            edgecolors="none")
+            fig.colorbar(sc, ax=ax, label="Perm_X", fraction=0.046, pad=0.04)
 
-        # Build basis for fit curve
-        y_fit = np.zeros(len(angle_fit))
-        for c_val, name in zip(coeffs, names):
-            if name == "1":
-                y_fit += c_val
-            elif name == "cos(2θ)":
-                y_fit += c_val * np.cos(2 * angle_fit_rad)
-            elif name == "sin(2θ)":
-                y_fit += c_val * np.sin(2 * angle_fit_rad)
-            elif name == "cos(4θ)":
-                y_fit += c_val * np.cos(4 * angle_fit_rad)
-            elif name == "sin(4θ)":
-                y_fit += c_val * np.sin(4 * angle_fit_rad)
-            elif name == "cos(6θ)":
-                y_fit += c_val * np.cos(6 * angle_fit_rad)
-            elif name == "sin(6θ)":
-                y_fit += c_val * np.sin(6 * angle_fit_rad)
-            elif name == "Porosity":
-                y_fit += c_val * por_mean
-            elif name == "Surface_A":
-                y_fit += c_val * sa_mean
+            orbit_colors = ["#e41a1c", "#377eb8", "#4daf4a"]
+            rng = np.random.default_rng(42)
+            start_indices = rng.choice(len(X), min(3, len(X)), replace=False)
+            for k, idx in enumerate(start_indices):
+                x_start = norm["X_normalized"][idx]
+                fwd = generator_orbit(x_start, g, 100, 0.03, winner_type)
+                back = generator_orbit(x_start, g, 100, -0.03, winner_type)
+                orb = np.vstack([back[::-1], fwd[1:]])
+                orb_orig = norm["scaler_X"].inverse_transform(orb)
+                ax.plot(orb_orig[:, d0], orb_orig[:, d1],
+                        color=orbit_colors[k % len(orbit_colors)], lw=2, alpha=0.8,
+                        label=f"orbit {k+1}")
 
-        ax.plot(angle_fit, y_fit, "r-", lw=2.5,
-                label=f"fit @ mean (R²={eq['R2']:.4f})")
-        ax.legend(fontsize=9)
+            ax.set_xlabel(FEATURE_NAMES[d0], fontsize=11)
+            ax.set_ylabel(FEATURE_NAMES[d1], fontsize=11)
+            ax.set_title("Generator Orbits", fontsize=12)
+            ax.legend(fontsize=8, loc="best")
 
-    ax.set_xlabel("Angle (degrees)", fontsize=11)
-    ax.set_ylabel("Permeability_X", fontsize=11)
-    ax.set_title("Discovered Equation", fontsize=12)
+        elif g.ndim == 2:
+            # Rotational: find the rotation plane
+            pairs = []
+            for a in range(g.shape[0]):
+                for b in range(a + 1, g.shape[1]):
+                    if abs(g[a, b]) > 0.01:
+                        pairs.append((a, b))
+            d0, d1 = pairs[0] if pairs else (0, 1)
+
+            sc = ax.scatter(X[:, d0], X[:, d1], c=y, cmap="viridis", s=8, alpha=0.4,
+                            edgecolors="none")
+            fig.colorbar(sc, ax=ax, label="Perm_X", fraction=0.046, pad=0.04)
+
+            orbit_colors = ["#e41a1c", "#377eb8", "#4daf4a"]
+            rng = np.random.default_rng(42)
+            start_indices = rng.choice(len(X), min(3, len(X)), replace=False)
+            for k, idx in enumerate(start_indices):
+                x_start = norm["X_normalized"][idx]
+                orb = generator_orbit(x_start, g, 200, 0.03, winner_type)
+                orb_orig = norm["scaler_X"].inverse_transform(orb)
+                ax.plot(orb_orig[:, d0], orb_orig[:, d1],
+                        color=orbit_colors[k % len(orbit_colors)], lw=2, alpha=0.8,
+                        label=f"orbit {k+1}")
+
+            ax.set_xlabel(FEATURE_NAMES[d0], fontsize=11)
+            ax.set_ylabel(FEATURE_NAMES[d1], fontsize=11)
+            ax.set_title("Generator Orbits", fontsize=12)
+            ax.legend(fontsize=8, loc="best")
+    else:
+        ax.text(0.5, 0.5, "No generators found",
+                ha="center", va="center", transform=ax.transAxes, fontsize=12)
 
     plt.tight_layout(rect=[0, 0, 1, 0.93])
     path = os.path.join(output_dir, "permeability_symmetry_discovery.png")
@@ -506,7 +406,7 @@ def main():
     )
     parser.add_argument("--data", default="permeability.csv")
     parser.add_argument("--synthetic", action="store_true")
-    parser.add_argument("--n-samples", type=int, default=500)
+    parser.add_argument("--n-geometries", type=int, default=180)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--latent-epochs", type=int, default=600)
     parser.add_argument("--sym-epochs", type=int, default=1500)
@@ -517,12 +417,18 @@ def main():
     raw, X, y = load_data(args)
     results = run_pipeline(raw, X, y, args)
 
-    print("\n" + "=" * 60)
-    print("Visualization")
+    print("=" * 60)
+    print("Creating visualizations")
     print("=" * 60)
     plot_results(raw, X, y, results, args.output_dir)
 
-    print("\nDONE.")
+    print()
+    print("=" * 60)
+    print("COMPLETE")
+    print("=" * 60)
+    print(f"  Symmetry: {results['winner_type']}")
+    print(f"  Generators: {len(results['generators'])}")
+    print()
 
 
 if __name__ == "__main__":
