@@ -175,11 +175,16 @@ def load_data(args):
     if args.synthetic:
         print("Generating synthetic permeability data...")
         data = generate_synthetic_data(n_samples=args.n_samples, seed=args.seed)
-    elif args.data and os.path.exists(args.data):
-        print(f"Loading permeability data from {args.data}...")
-        data = load_csv_data(args.data)
-    else:
-        print(f"'{args.data}' not found. Using synthetic data.")
+    elif args.data:
+        # Try the path as given, then relative to script directory
+        data_path = args.data
+        if not os.path.exists(data_path):
+            data_path = os.path.join(_here, args.data)
+        if os.path.exists(data_path):
+            print(f"Loading permeability data from {data_path}...")
+            data = load_csv_data(data_path)
+        else:
+            print(f"'{args.data}' not found. Using synthetic data.")
         data = generate_synthetic_data(n_samples=args.n_samples, seed=args.seed)
 
     X_raw, y = data["X_raw"], data["y"]
@@ -546,7 +551,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Discover symmetry in porous media permeability data"
     )
-    parser.add_argument("--data", default="permeability_data.csv")
+    parser.add_argument("--data", default="permeability.csv")
     parser.add_argument("--synthetic", action="store_true")
     parser.add_argument("--n-samples", type=int, default=300)
     parser.add_argument("--seed", type=int, default=42)
