@@ -195,7 +195,8 @@ def run_pipeline(X: np.ndarray, y: np.ndarray, args) -> dict:
     results["latent"] = res_latent
     print(f"\n  Optimal latent dimension: {n_latent}")
     for k, m in res_latent["metrics"].items():
-        print(f"    k={k}: R2={m['R2']:.4f}, MSE={m['MSE']:.6f}")
+        r2_tr = m.get('R2_train', float('nan'))
+        print(f"    k={k}: R2_train={r2_tr:.4f}, R2_test={m['R2']:.4f}, MSE={m['MSE']:.6f}")
     print()
 
     # --- Identify symmetry type ---
@@ -427,7 +428,8 @@ def plot_results(X: np.ndarray, y: np.ndarray, results: dict, output_dir: str):
         f.write(f"Output: dijet transverse mass m_jj_T\n\n")
         f.write(f"Optimal latent dimension: {latent['optimal_n_latent']}\n")
         for k, m in latent["metrics"].items():
-            f.write(f"  k={k}: R2={m['R2']:.4f}\n")
+            r2_tr = m.get('R2_train', float('nan'))
+            f.write(f"  k={k}: R2_train={r2_tr:.4f}, R2_test={m['R2']:.4f}\n")
         f.write(f"\nDiscovered symmetry: {sym_res['symmetry_type']}\n")
         for t, l in sorted(sym_res["losses"].items(), key=lambda kv: kv[1]):
             f.write(f"  {t}: MSE={l:.6f}\n")

@@ -161,7 +161,16 @@ def discover_latent_dimension(
                 best_model = model
 
         mse = float(np.mean((y_val_np - best_model(X_val_dev).squeeze(1).detach().cpu().numpy()) ** 2))
-        metrics[k] = {"R2": best_r2, "MSE": mse}
+
+        # Also compute training R² for comparison
+        X_tr_dev = X_tr.to(_device)
+        y_tr_np = y[train_idx]
+        best_model.eval()
+        with torch.no_grad():
+            y_tr_pred_np = best_model(X_tr_dev).squeeze(1).cpu().numpy()
+        r2_train = _r2_score(y_tr_np, y_tr_pred_np)
+
+        metrics[k] = {"R2": best_r2, "R2_train": r2_train, "MSE": mse}
         models[k]  = best_model
 
     # --- Select optimal latent dimension ---
