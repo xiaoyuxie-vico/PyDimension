@@ -352,6 +352,12 @@ def run_full_pipeline(X, y, best_method, args):
             parts = [f"{VARIABLE_NAMES[j]}:{W[row_i, j]:+.4f}" for j in range(W.shape[1])]
             print(f"    z{row_i+1}: [{', '.join(parts)}]")
 
+    # --- Equation discovery (for translational symmetry) ---
+    if winner_type == "translational":
+        print(f"\n  --- Equation Discovery ---")
+        eq_results = discover_equation(X, y, norm, winner_encoder, res_latent, res_sym)
+        results["equation"] = eq_results
+
     # Physical interpretation
     print(f"\n  Physical interpretation of generators:")
     if winner_type == "translational" and generators:
@@ -385,6 +391,214 @@ def run_full_pipeline(X, y, best_method, args):
     print()
 
     return results
+
+
+def discover_equation(X, y, norm, winner_encoder, res_latent, res_sym):
+    """
+    Extract a closed-form equation from the translational encoder + decoder.
+
+    Model: y = decoder(z)  where  z = W · x_normalized
+
+    Steps:
+    1. Compute z = W · x_norm for all samples
+    2. Sample the decoder on a fine grid of z values
+    3. Fit polynomial and power-law forms to decoder(z) vs z
+    4. Convert W coefficients back to original (un-normalized) variables
+    5. Print the full equation in original units
+    """
+    X_norm = norm["X_normalized"]
+    scaler_X = norm["scaler_X"]
+    scaler_y = norm["scaler_y"]
+    W = winner_encoder.weight_matrix  # (n_latent, n_features)
+
+    # Get the decoder from the symmetry identification step
+    winner_type = res_sym["symmetry_type"]
+    # We need to reconstruct decoder — use the latent decoder
+    # Actually, the identify_symmetry trains encoder+decoder jointly
+    # but only returns the encoder. We need to re-evaluate.
+    # Instead, we can directly compute z and fit y = f(z) from data.
+
+    n_latent = W.shape[0]
+
+    if n_latent == 1:
+        # z is 1D: fit y = f(z) directly from data
+        z = (X_norm @ W.T).ravel()  # (n_samples,)
+
+        # Try multiple functional forms
+        results = {}
+
+        # Polynomial fits (degree 1 to 4)
+        best_r2 = -np.inf
+        best_form = None
+        best_coeffs = None
+
+        for deg in range(1, 5):
+            coeffs = np.polyfit(z, y, deg)
+            y_pred = np.polyval(coeffs, z)
+            ss_res = np.sum((y - y_pred) ** 2)
+            ss_tot = np.sum((y - y.mean()) ** 2)
+            r2 = 1 - ss_res / (ss_tot + 1e-12)
+            results[f"poly_{deg}"] = {"coeffs": coeffs, "R2": r2}
+            if r2 > best_r2:
+                best_r2 = r2
+                best_form = f"poly_{deg}"
+                best_coeffs = coeffs
+
+        # Print all fits
+        print(f"\n  Functional form fitting (y vs z = W·x_norm):")
+        for name, res in results.items():
+            deg = int(name.split("_")[1])
+            marker = " <-- best" if name == best_form else ""
+            print(f"    {name}: R² = {res['R2']:.6f}{marker}")
+
+        # Print the best equation in normalized space
+        deg = int(best_form.split("_")[1])
+        c = best_coeffs
+        terms = []
+        for i, coeff in enumerate(c):
+            power = deg - i
+            if abs(coeff) < 1e-8:
+                continue
+            if power == 0:
+                terms.append(f"{coeff:+.4f}")
+            elif power == 1:
+                terms.append(f"{coeff:+.4f}·z")
+            else:
+                terms.append(f"{coeff:+.4f}·z^{power}")
+        eq_str = " ".join(terms)
+        print(f"\n  Best fit (normalized space):")
+        print(f"    y = {eq_str}")
+
+        # Now express z in terms of original variables
+        # z = W · x_norm = W · (x - mean) / std  (for standard normalization)
+        # z = sum_j w_j * (x_j - mean_j) / std_j
+        # z = sum_j (w_j/std_j) * x_j  -  sum_j (w_j * mean_j / std_j)
+
+        w = W[0]  # (n_features,)
+
+        # Get normalization parameters
+        if hasattr(scaler_X, 'mean_') and hasattr(scaler_X, 'scale_'):
+            # StandardScaler or RobustScaler
+            mean = scaler_X.center_ if hasattr(scaler_X, 'center_') else scaler_X.mean_
+            scale = scaler_X.scale_
+        elif hasattr(scaler_X, 'data_min_') and hasattr(scaler_X, 'data_range_'):
+            # MinMaxScaler
+            mean = scaler_X.data_min_
+            scale = scaler_X.data_range_
+        else:
+            mean = np.zeros(len(w))
+            scale = np.ones(len(w))
+
+        # Coefficients in original space: w_orig_j = w_j / scale_j
+        w_orig = w / scale
+        z_offset = -np.sum(w * mean / scale)
+
+        print(f"\n  Latent variable in original units:")
+        z_parts = []
+        for j, name in enumerate(VARIABLE_NAMES):
+            if abs(w_orig[j]) > 1e-8:
+                z_parts.append(f"{w_orig[j]:+.6f}·{name}")
+        print(f"    z = {' '.join(z_parts)} {z_offset:+.6f}")
+
+        # Full equation: y = poly(z) where z = linear combo of original vars
+        print(f"\n  ┌─────────────────────────────────────────────┐")
+        print(f"  │  DISCOVERED EQUATION                        │")
+        print(f"  │                                              │")
+        if deg == 1:
+            a, b = c[0], c[1]
+            print(f"  │  Permeability_X = {a:.4f} · z {b:+.4f}        │")
+        elif deg == 2:
+            a, b, cc = c[0], c[1], c[2]
+            print(f"  │  Permeability_X = {a:.4f}·z² {b:+.4f}·z {cc:+.4f}│")
+        else:
+            print(f"  │  Permeability_X = {eq_str}")
+        print(f"  │                                              │")
+        print(f"  │  where z = W · x (see coefficients above)   │")
+        print(f"  │  R² = {best_r2:.4f}                                │")
+        print(f"  └─────────────────────────────────────────────┘")
+
+        return {
+            "best_form": best_form,
+            "best_R2": best_r2,
+            "best_coeffs": best_coeffs,
+            "W_original": w_orig,
+            "z_offset": z_offset,
+            "all_fits": results,
+        }
+
+    else:
+        # Multi-dimensional latent: z is a vector, harder to express as single equation
+        z = X_norm @ W.T  # (n_samples, n_latent)
+        print(f"\n  Equation discovery for n_latent={n_latent}:")
+        print(f"  Fitting: y = f(z1, z2, ..., z{n_latent})")
+
+        # Try multivariate polynomial regression
+        from itertools import combinations_with_replacement
+
+        # Build polynomial features up to degree 2
+        features = [z[:, i] for i in range(n_latent)]
+        feature_names = [f"z{i+1}" for i in range(n_latent)]
+
+        # Add squares and cross terms
+        for i in range(n_latent):
+            features.append(z[:, i] ** 2)
+            feature_names.append(f"z{i+1}²")
+        for i in range(n_latent):
+            for j in range(i + 1, n_latent):
+                features.append(z[:, i] * z[:, j])
+                feature_names.append(f"z{i+1}·z{j+1}")
+
+        Z_poly = np.column_stack(features)
+        # Add intercept
+        Z_aug = np.column_stack([Z_poly, np.ones(len(y))])
+        feature_names.append("1")
+
+        # Least squares fit
+        coeffs, residuals, rank, sv = np.linalg.lstsq(Z_aug, y, rcond=None)
+        y_pred = Z_aug @ coeffs
+        ss_res = np.sum((y - y_pred) ** 2)
+        ss_tot = np.sum((y - y.mean()) ** 2)
+        r2 = 1 - ss_res / (ss_tot + 1e-12)
+
+        print(f"  Multivariate polynomial fit (degree 2): R² = {r2:.4f}")
+        print(f"\n  Permeability_X = ", end="")
+        terms = []
+        for c_val, fname in zip(coeffs, feature_names):
+            if abs(c_val) > 1e-6:
+                terms.append(f"{c_val:+.4f}·{fname}")
+        print(" ".join(terms))
+
+        # Express each z_i in original variables
+        print(f"\n  Where:")
+        for i in range(n_latent):
+            w = W[i]
+            if hasattr(scaler_X, 'mean_') and hasattr(scaler_X, 'scale_'):
+                mean = scaler_X.center_ if hasattr(scaler_X, 'center_') else scaler_X.mean_
+                scale = scaler_X.scale_
+            elif hasattr(scaler_X, 'data_min_') and hasattr(scaler_X, 'data_range_'):
+                mean = scaler_X.data_min_
+                scale = scaler_X.data_range_
+            else:
+                mean = np.zeros(len(w))
+                scale = np.ones(len(w))
+
+            w_orig = w / scale
+            z_offset = -np.sum(w * mean / scale)
+            parts = [f"{w_orig[j]:+.4f}·{VARIABLE_NAMES[j]}" for j in range(len(w)) if abs(w_orig[j]) > 1e-6]
+            print(f"    z{i+1} = {' '.join(parts)} {z_offset:+.4f}")
+
+        print(f"\n  ┌─────────────────────────────────────────────┐")
+        print(f"  │  DISCOVERED EQUATION (R² = {r2:.4f})          │")
+        print(f"  │  See coefficients above                     │")
+        print(f"  └─────────────────────────────────────────────┘")
+
+        return {
+            "best_form": "multivariate_poly_2",
+            "best_R2": r2,
+            "coeffs": coeffs,
+            "feature_names": feature_names,
+            "W": W,
+        }
 
 
 def _interpret_translational(g):
