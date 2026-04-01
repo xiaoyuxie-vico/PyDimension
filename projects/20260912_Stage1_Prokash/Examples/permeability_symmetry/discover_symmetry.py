@@ -62,7 +62,7 @@ except ImportError as e:
 import torch.multiprocessing as _tmp
 _tmp.cpu_count = lambda: 0
 
-FEATURE_NAMES = ["cos(2θ)", "sin(2θ)", "Porosity", "Surface_A"]
+FEATURE_NAMES = ["cos(2θ)", "sin(2θ)"]
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -164,8 +164,6 @@ def load_data(args):
     X = np.column_stack([
         np.cos(2 * angle_rad),
         np.sin(2 * angle_rad),
-        porosity,
-        surface_a,
     ])
 
     print(f"  Samples: {len(angle)}")
@@ -203,7 +201,7 @@ def run_pipeline(raw, X, y, args):
     print("=" * 60)
     sys.stdout.flush()
     res_latent = discover_latent_dimension(
-        X_norm, y_norm, max_latent=3,
+        X_norm, y_norm, max_latent=2,
         n_epochs=args.latent_epochs, n_restarts=args.n_restarts, seed=args.seed,
     )
     n_latent = res_latent["optimal_n_latent"]
