@@ -4,7 +4,7 @@ Configuration handling for data preprocessing module.
 
 import json
 from typing import List, Optional, Dict, Any
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -23,12 +23,17 @@ class DataPreprocessingConfig:
     
     # Normalization settings
     normalize: bool = True  # Whether to normalize data (divide by maximum)
+    preprocessing_method: str = "dimensional_analysis"  # unified preprocessing method
+    normalize_basis: bool = True  # Normalize discovered basis vectors to unit length
     
     # Output paths
     output_dir: str = "output"  # Base output directory
     normalized_data_filename: str = "normalized_data.csv"
     original_data_filename: str = "original_data.csv"  # Original input data file
     dimension_matrix_filename: str = "dimension_matrix.csv"
+    afterDA_data_filename: str = "afterDA_data.csv"
+    basis_vectors_filename: str = "basis_vectors.csv"
+    normalized_lg_data_filename: str = "normalized_lg_afterDA_data.csv"
     data_dir: str = "data"  # Subdirectory for data files
     figures_dir: str = "figures"  # Subdirectory for figures
     
@@ -51,6 +56,7 @@ class DataPreprocessingConfig:
         # Extract output settings from unified OUTPUT section
         output_section = config_dict.get('OUTPUT', {})
         data_prep_output = config_dict.get('DATA_PREPROCESSING_OUTPUT', {})
+        dim_analysis_output = config_dict.get('DIMENSIONAL_ANALYSIS_OUTPUT', {})
         
         # Get output_dir from OUTPUT section
         output_dir = output_section.get('output_dir', 'output')
@@ -59,6 +65,18 @@ class DataPreprocessingConfig:
         normalized_data_filename = data_prep_output.get('normalized_data_filename', 'normalized_data.csv')
         original_data_filename = data_prep_output.get('original_data_filename', 'original_data.csv')
         dimension_matrix_filename = data_prep_output.get('dimension_matrix_filename', 'dimension_matrix.csv')
+        afterDA_data_filename = data_prep_output.get(
+            'afterDA_data_filename',
+            dim_analysis_output.get('afterDA_data_filename', 'afterDA_data.csv'),
+        )
+        basis_vectors_filename = data_prep_output.get(
+            'basis_vectors_filename',
+            dim_analysis_output.get('basis_vectors_filename', 'basis_vectors.csv'),
+        )
+        normalized_lg_data_filename = data_prep_output.get(
+            'normalized_lg_data_filename',
+            dim_analysis_output.get('normalized_lg_data_filename', 'normalized_lg_afterDA_data.csv'),
+        )
         
         figures_dir = output_section.get('figures_dir', 'figures')
         
@@ -83,10 +101,15 @@ class DataPreprocessingConfig:
             dimension_matrix_file=data_prep.get('dimension_matrix_file'),
             variable_units=data_prep.get('variable_units'),
             normalize=data_prep.get('normalize', True),
+            preprocessing_method=data_prep.get('preprocessing_method', 'dimensional_analysis'),
+            normalize_basis=data_prep.get('normalize_basis', True),
             output_dir=output_dir,
             normalized_data_filename=normalized_data_filename,
             original_data_filename=original_data_filename,
             dimension_matrix_filename=dimension_matrix_filename,
+            afterDA_data_filename=afterDA_data_filename,
+            basis_vectors_filename=basis_vectors_filename,
+            normalized_lg_data_filename=normalized_lg_data_filename,
             data_dir=data_dir,
             figures_dir=figures_dir
         )
@@ -108,7 +131,9 @@ class DataPreprocessingConfig:
                 'output_variables': self.output_variables,
                 'dimension_matrix_file': self.dimension_matrix_file,
                 'variable_units': self.variable_units,
-                'normalize': self.normalize
+                'normalize': self.normalize,
+                'preprocessing_method': self.preprocessing_method,
+                'normalize_basis': self.normalize_basis,
             },
             'OUTPUT': {
                 'output_dir': self.output_dir,
@@ -121,6 +146,9 @@ class DataPreprocessingConfig:
                 'normalized_data_filename': self.normalized_data_filename,
                 'original_data_filename': self.original_data_filename,
                 'dimension_matrix_filename': self.dimension_matrix_filename,
+                'afterDA_data_filename': self.afterDA_data_filename,
+                'basis_vectors_filename': self.basis_vectors_filename,
+                'normalized_lg_data_filename': self.normalized_lg_data_filename,
                 'plot_filename': 'data_preprocessing_plots.png'
             }
         }
@@ -147,6 +175,9 @@ class DataPreprocessingConfig:
         
         if self.dimension_matrix_file is not None and not Path(self.dimension_matrix_file).exists():
             errors.append(f"Dimension matrix file not found: {self.dimension_matrix_file}")
+
+        if self.preprocessing_method not in {"dimensional_analysis"}:
+            errors.append("preprocessing_method must currently be 'dimensional_analysis'")
         
         return errors
 

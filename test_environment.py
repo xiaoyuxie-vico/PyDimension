@@ -61,9 +61,11 @@ def main():
     pydimension_modules = [
         ("pydimension.data_generation", "Data Generation"),
         ("pydimension.data_preprocessing", "Data Preprocessing"),
-        ("pydimension.dimensional_analysis", "Dimensional Analysis"),
-        ("pydimension.constraint_filtering", "Dimensional Filtering"),
-        ("pydimension.optimization_discovery", "Optimization Discovery"),
+        ("pydimension.intrinsic_coordinate", "Intrinsic Coordinate"),
+        ("pydimension.symmetry_discovery", "Symmetry Discovery"),
+        ("legacy.pydimension_v2.dimensional_analysis", "Dimensional Analysis (legacy)"),
+        ("legacy.pydimension_v2.constraint_filtering", "Constraint Filtering (legacy)"),
+        ("legacy.pydimension_v2.optimization_discovery", "Optimization Discovery (legacy)"),
     ]
     
     module_results = []

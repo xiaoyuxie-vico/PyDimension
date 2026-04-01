@@ -1,14 +1,17 @@
 # PyDimension
 
-A modular Python package for discovering **dimensionless relationships** (dimensionless numbers and scaling laws) in physical systems using **data and machine learning**.
+A modular Python package for **symmetry discovery from data** in physical systems using **data and machine learning**.
+
+![OpenSymmetry intro figure](projects/20260307_LEARNING_STAGE/Picture1.png)
 
 ## 🚀 Try It Online
 
 **🌐 [Streamlit Web App](https://huggingface.co/spaces/xiaoyuxie-vico/PyDimension)** - Run PyDimension in your browser (no installation required)
 
 
-> **What is this?** PyDimension takes experimental or synthetic data with physical units and automatically finds a small set of meaningful **dimensionless groups** and **scaling laws** that explain the system.
-> It is the production-ready, modular implementation of the method from the Nature Communications paper *“Data-driven discovery of dimensionless numbers and governing laws from scarce measurements”*.
+> **What is this?** PyDimension is evolving toward **OpenSymmetry**: a modular framework for discovering hidden symmetries from data, including scaling, translational, rotational, and related invariance structures.
+> In this framework, **dimensionless learning** is one important module rather than the whole story: it is the scaling-symmetry case, and dimensionless groups are one concrete representation of that symmetry structure.
+> The current repository still preserves the production-ready implementation of the dimensionless-learning method from the Nature Communications paper *“Data-driven discovery of dimensionless numbers and governing laws from scarce measurements”*, while expanding toward broader symmetry discovery.
 
 
 ## Relationship to PyDimension v1.0
@@ -25,16 +28,46 @@ You can browse the legacy materials on GitHub:
 - Scaling-law examples: `https://github.com/xiaoyuxie-vico/PyDimension/tree/v1.0/scaling_law`
 - PDE discovery examples: `https://github.com/xiaoyuxie-vico/PyDimension/tree/v1.0/PDE_discovery`
 
+## PyDimension 3.0 Direction
+
+PyDimension is being redesigned toward **OpenSymmetry**, a broader framework for symmetry-aware scientific discovery.
+
+The current package provides the production-ready implementation of dimensionless learning. The next architecture direction is to keep the codebase concise and consistent while generalizing it beyond the current workflow:
+
+- Keep `data_generation`, but support multiple symmetry-aware generators such as translational, rotational, and scaling cases.
+- Merge the current preprocessing and dimensional-analysis responsibilities into a broader `data_preprocessing` stage.
+- Rename `constraint_filtering` to `intrinsic_coordinate`, with methods such as PCA, SIR, and autoencoder-decoder models.
+- Replace the 3.0 discovery stage with `symmetry_discovery`, using translational, rotational, and scaling encoders to identify which symmetries are hidden in the data.
+
+This redesign follows a first-principles approach: use simple module boundaries, consistent naming, and shared interfaces so that new symmetry classes can be added without duplicating the pipeline.
+
+The current architecture task is documented in `projects/20260308_CODE_STRUCTURE/task.md`.
+
+## Benchmark And Migration Status
+
+The repository now carries two runnable paths during the 3.0 migration:
+
+- `legacy/pydimension_v2/` preserves the PyDimension 2.0 benchmark interface.
+- `pydimension/` now contains the first PyDimension 3.0 migration surface for translational symmetry.
+
+The first parity milestone is now wired end-to-end:
+
+- the 2.0 benchmark runs through `legacy/run_pipeline_v2.py`
+- the 3.0 translational path runs through `run_pipeline_v3.py`
+- `run_pipeline.py` dispatches between them with `--pipeline-version v2|v3`
+- the key translational benchmark artifacts match between the two paths, with symmetry-discovery JSON differences limited to timestamps and output-path metadata
+
 ## Who is PyDimension for?
 
-- **Experimentalists and engineers** who want to understand which combinations of parameters control their system (e.g., flow, heat transfer, additive manufacturing).
+- **Experimentalists and engineers** who want to identify which hidden symmetries or invariant structures control their system (e.g., flow, heat transfer, additive manufacturing).
 - **Data and ML practitioners** looking for **interpretable, physics-aware models** instead of black-box predictors.
-- **Students and researchers** interested in dimensional analysis, scaling laws, and data-driven discovery of governing laws.
+- **Students and researchers** interested in symmetry, dimensional analysis, scaling laws, and data-driven discovery of governing laws.
 
 If you can provide a table of measurements (inputs with units and outputs), PyDimension can help you:
 
-- Reduce many parameters to a few **dimensionless numbers**.
-- Learn **simple scaling laws** between those numbers and outputs.
+- Detect low-dimensional structure and candidate symmetries hidden in the data.
+- Recover interpretable invariants, intrinsic coordinates, and reduced representations.
+- In the current dimensionless-learning module, reduce many parameters to a few **dimensionless groups** and learn **simple scaling laws** between those groups and outputs.
 - Visualize and interpret how your system behaves across conditions.
 
 
@@ -83,8 +116,10 @@ pip install .
 After installation, you can use the package from anywhere:
 ```bash
 # Use command-line tools
-pydimension-generate --config pydimension/configs/config_synthetic.json
-pydimension-preprocess --config pydimension/configs/config_synthetic.json
+pydimension-generate --config pydimension/configs/config_translation.json
+pydimension-preprocess --config pydimension/configs/config_translation.json
+pydimension-intrinsic --config pydimension/configs/config_translation.json
+pydimension-symmetry --config pydimension/configs/config_translation.json
 
 # Or use Python API
 python -c "from pydimension import DataGenerator; print('✅ Installed successfully')"
@@ -99,7 +134,7 @@ You can use **Conda**, **Mamba**, or **Micromamba** to create the environment. A
 micromamba env create -f environment.yml
 micromamba activate pydimension
 python test_environment.py
-python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
+python run_pipeline.py --pipeline-version v3 --config pydimension/configs/config_translation.json
 ```
 
 **Option 2: Mamba (Faster than Conda)**
@@ -107,7 +142,7 @@ python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
 mamba env create -f environment.yml
 conda activate pydimension  # Use conda activate even with mamba
 python test_environment.py
-python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
+python run_pipeline.py --pipeline-version v3 --config pydimension/configs/config_translation.json
 ```
 
 **Option 3: Conda (Standard)**
@@ -115,7 +150,7 @@ python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
 conda env create -f environment.yml
 conda activate pydimension
 python test_environment.py
-python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
+python run_pipeline.py --pipeline-version v3 --config pydimension/configs/config_translation.json
 ```
 
 **Option 4: pip (Alternative)**
@@ -124,7 +159,7 @@ python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python test_environment.py
-python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
+python run_pipeline.py --pipeline-version v3 --config pydimension/configs/config_translation.json
 ```
 
 > **Note**: Conda, Mamba, and Micromamba are all compatible package managers. Choose based on your preference:
@@ -144,13 +179,21 @@ See [docs/STREAMLIT_README.md](docs/STREAMLIT_README.md) for details.
 
 ## Overview
 
-PyDimension discovers dimensionless scaling laws from experimental or synthetic data through a modular pipeline:
+PyDimension is moving toward a modular pipeline for **symmetry discovery from data**:
 
-1. **Data Generation** - Generate synthetic datasets with known relationships
-2. **Data Preprocessing** - Load, clean, and normalize data
-3. **Dimensional Analysis** - Compute basis vectors and dimensionless variables
-4. **Dimensional Filtering** - Identify dominant groups via PCA/SIR
-5. **Optimization Discovery** - Train neural networks to discover scaling laws
+1. **Data Generation** - Generate synthetic datasets with known symmetry structure
+2. **Data Preprocessing** - Load, clean, normalize, and reduce raw data into symmetry-ready representations
+3. **Intrinsic Coordinate** - Identify low-dimensional latent structure using PCA, SIR, or future autoencoder methods
+4. **Symmetry Discovery** - Use symmetry-aware encoders to determine which invariances are present and how they are expressed
+
+Within this broader framework, **dimensionless learning** is the currently mature module. It corresponds to the scaling-symmetry case, where dimensionless groups and scaling laws are the main outputs.
+
+For the migration path toward OpenSymmetry, the current v3 pipeline is:
+
+1. **Data Generation** - symmetry-aware generators, with translational symmetry implemented first
+2. **Data Preprocessing** - preprocessing plus dimensional analysis through one unified stage, without a separate 3.0 dimensional-analysis module
+3. **Intrinsic Coordinate** - PCA/SIR reuse from 2.0, plus an autoencoder scaffold
+4. **Symmetry Discovery** - translational encoder active, rotational/scaling encoder stubs ready
 
 ### Key Features
 
@@ -163,113 +206,112 @@ PyDimension discovers dimensionless scaling laws from experimental or synthetic 
 
 ```
 PyDimension/
-├── pydimension/
-│   ├── data_generation/          # Module 1: Synthetic data generation
-│   ├── data_preprocessing/        # Module 2: Data preprocessing
-│   ├── dimensional_analysis/      # Module 3: Dimensional analysis
-│   ├── constraint_filtering/      # Module 4: Dimensional filtering
-│   ├── optimization_discovery/    # Module 5: Neural network training
-│   └── configs/                   # Configuration files
-├── generate_data.py              # Convenience scripts
+├── pydimension/                   # 3.0 OpenSymmetry package
+│   ├── data_generation/           # Symmetry-aware data generation
+│   │   ├── base.py, translational.py, rotational.py, scaling.py
+│   ├── data_preprocessing/        # Unified preprocessing + dimensional analysis
+│   │   ├── preprocessor.py, loader.py, normalizer.py
+│   │   ├── unit_parser.py, dimension_matrix.py, transforms.py
+│   ├── intrinsic_coordinate/      # Latent coordinate discovery
+│   │   ├── pca.py, sir.py, autoencoder.py, decoder.py
+│   ├── symmetry_discovery/        # Symmetry-aware encoder-based discovery
+│   │   ├── engine.py, scoring.py, relation_heads.py
+│   │   └── encoders/ (translational, rotational, scaling)
+│   ├── benchmarks/                # Reproducible benchmark registry
+│   ├── common/                    # Shared I/O, paths, plotting, validation, types
+│   └── configs/                   # JSON configs per symmetry type
+├── legacy/                        # Preserved 2.0 benchmark
+│   ├── pydimension_v2/            # Full 2.0 modules (dimensional_analysis,
+│   │                              #   constraint_filtering, optimization_discovery)
+│   ├── run_pipeline_v2.py         # Runnable 2.0 benchmark pipeline
+│   ├── analyze_dimensions.py      # Legacy convenience scripts
+│   ├── filter_constraints.py
+│   └── optimize_discovery.py
+├── generate_data.py               # 3.0 convenience scripts
 ├── preprocess_data.py
-├── analyze_dimensions.py
-├── filter_constraints.py
-├── optimize_discovery.py
-├── run_pipeline.py               # Run complete pipeline
-└── streamlit_app.py              # Web application
+├── intrinsic_coordinate.py
+├── discover_symmetry.py
+├── run_pipeline.py                # Dispatch v2 benchmark or v3 pipeline
+└── streamlit_app.py               # Web application
 ```
+
+The full architectural design is documented in `projects/20260308_CODE_STRUCTURE/task.md`.
 
 ## Modules
 
-| Module | Status | Documentation | Quick Start |
-|--------|--------|---------------|-------------|
-| **Data Generation** | ✅ | [README](pydimension/data_generation/README.md) | `python generate_data.py --config pydimension/configs/config_synthetic.json` |
-| **Data Preprocessing** | ✅ | [README](pydimension/data_preprocessing/README.md) | `python preprocess_data.py --config pydimension/configs/config_synthetic.json` |
-| **Dimensional Analysis** | ✅ | [README](pydimension/dimensional_analysis/README.md) | `python analyze_dimensions.py --config pydimension/configs/config_synthetic.json` |
-| **Dimensional Filtering** | ✅ | [README](pydimension/constraint_filtering/README.md) | `python filter_constraints.py --config pydimension/configs/config_synthetic.json` |
-| **Optimization Discovery** | ✅ | [README](pydimension/optimization_discovery/README.md) | `python optimize_discovery.py --config pydimension/configs/config_synthetic.json --plot` |
+### PyDimension 3.0 (OpenSymmetry pipeline)
+
+| Stage | Module | Methods | Quick Start |
+|-------|--------|---------|-------------|
+| 1 | **Data Generation** | translational, rotational\*, scaling\* | `python generate_data.py --config pydimension/configs/config_translation.json` |
+| 2 | **Data Preprocessing** | dimensional analysis (merged) | `python preprocess_data.py --config pydimension/configs/config_translation.json` |
+| 3 | **Intrinsic Coordinate** | PCA, SIR, autoencoder\* | `python intrinsic_coordinate.py --config pydimension/configs/config_translation.json` |
+| 4 | **Symmetry Discovery** | translational encoder, rotational\*, scaling\* | `python discover_symmetry.py --config pydimension/configs/config_translation.json` |
+
+\* scaffold - interface defined, implementation reserved for a later phase.
+
+### Legacy 2.0 (benchmark reference, in `legacy/`)
+
+| Module | Quick Start |
+|--------|-------------|
+| Dimensional Analysis | `python legacy/analyze_dimensions.py --config pydimension/configs/config_synthetic.json` |
+| Constraint Filtering | `python legacy/filter_constraints.py --config pydimension/configs/config_synthetic.json` |
+| Optimization Discovery | `python legacy/optimize_discovery.py --config pydimension/configs/config_synthetic.json --plot` |
 
 ## Workflow
 
-**Note**: Optimization Discovery automatically uses the suggested dominant count from Dimensional Filtering. Run Dimensional Filtering first.
-
-### Automated Pipeline (Recommended)
+### v3 OpenSymmetry Pipeline (Recommended)
 
 ```bash
-# Run all modules with visualization
-python run_pipeline.py --config pydimension/configs/config_synthetic.json --plot
+# Full 3.0 translational pipeline (data gen → preprocessing+DA → intrinsic coord → symmetry discovery)
+python run_pipeline.py --pipeline-version v3 --config pydimension/configs/config_translation.json
 
-# Without visualization
-python run_pipeline.py --config pydimension/configs/config_synthetic.json
-
-# Custom output directory
-python run_pipeline.py --config pydimension/configs/config_synthetic.json --output_dir my_output --plot
-
-# Continue on error
-python run_pipeline.py --config pydimension/configs/config_synthetic.json --continue-on-error
-
-# Skip specific steps
-python run_pipeline.py --config pydimension/configs/config_synthetic.json --skip data_generation --skip data_preprocessing
-
-# Stop after a specific step
-python run_pipeline.py --config pydimension/configs/config_synthetic.json --stop-after dimensional_analysis
+# Or step by step
+python generate_data.py     --config pydimension/configs/config_translation.json --plot
+python preprocess_data.py   --config pydimension/configs/config_translation.json --plot
+python intrinsic_coordinate.py --config pydimension/configs/config_translation.json
+python discover_symmetry.py --config pydimension/configs/config_translation.json
 ```
 
-This runs all 5 modules sequentially with automatic data flow between steps.
-
-### Manual Step-by-Step
-
-#### Synthetic Data Example
+### v2 Benchmark Pipeline
 
 ```bash
-# Step 1: Generate data
-python generate_data.py --config pydimension/configs/config_synthetic.json --plot
+# Full 2.0 benchmark (preserved for parity validation)
+python run_pipeline.py --pipeline-version v2 --config legacy/pydimension_v2/configs/config_synthetic_v2.json
 
-# Step 2: Preprocess data
-python preprocess_data.py --config pydimension/configs/config_synthetic.json --plot
-
-# Step 3: Dimensional analysis (normalized lg data saved by default)
-python analyze_dimensions.py --config pydimension/configs/config_synthetic.json --plot
-
-# Step 4: Dimensional filtering (outputs suggested_dominant_count.json)
-python filter_constraints.py --config pydimension/configs/config_synthetic.json --plot
-
-# Step 5: Optimization discovery (automatically uses suggested count from step 4)
-python optimize_discovery.py --config pydimension/configs/config_synthetic.json --plot
-```
-
-#### Keyhole Problem Example
-
-```bash
-# Step 1: Preprocess data (using keyhole dataset)
-python preprocess_data.py --config pydimension/configs/config_keyhole.json --plot
-
-# Step 2: Dimensional analysis
-python analyze_dimensions.py --config pydimension/configs/config_keyhole.json --plot
-
-# Step 3: Dimensional filtering
-python filter_constraints.py --config pydimension/configs/config_keyhole.json --plot
-
-# Step 4: Optimization discovery
-python optimize_discovery.py --config pydimension/configs/config_keyhole.json --plot
+# Or step by step (legacy scripts now in legacy/)
+python generate_data.py                --config pydimension/configs/config_synthetic.json --plot
+python preprocess_data.py              --config pydimension/configs/config_synthetic.json --plot
+python legacy/analyze_dimensions.py    --config pydimension/configs/config_synthetic.json --plot
+python legacy/filter_constraints.py    --config pydimension/configs/config_synthetic.json --plot
+python legacy/optimize_discovery.py    --config pydimension/configs/config_synthetic.json --plot
 ```
 
 ## Configuration
 
-All modules use a unified JSON configuration file (`pydimension/configs/config_synthetic.json`):
+All modules use a unified JSON configuration file. The 3.0 config schema uses section names that match the new module names:
 
 ```json
 {
-  "DATA_GENERATION": { ... },
-  "DATA_PREPROCESSING": { "enabled": false, ... },
-  "DIMENSIONAL_ANALYSIS": { "enabled": false, ... },
-  "CONSTRAINT_FILTERING": { "enabled": false, ... },
-  "OPTIMIZATION_DISCOVERY": { "enabled": false, ... },
-  "OUTPUT": { "output_dir": "output", ... }
+  "DATA_GENERATION": { },
+  "DATA_PREPROCESSING": { "preprocessing_method": "dimensional_analysis" },
+  "INTRINSIC_COORDINATE": { "method": "pca_sir" },
+  "SYMMETRY_DISCOVERY": { "symmetry_type": "translational", "encoder_name": "translational" },
+  "OUTPUT": { "output_dir": "output_v3_translation" }
 }
 ```
 
-**All configuration files must be in `pydimension/configs/` directory.**
+Available config files:
+
+| File | Symmetry | Pipeline |
+|------|----------|----------|
+| `config_translation.json` | translational | 3.0 |
+| `config_rotation.json` | rotational (scaffold) | 3.0 |
+| `config_scaling.json` | scaling (scaffold) | 3.0 |
+| `config_synthetic.json` | translational | 2.0 |
+| `config_keyhole.json` | translational (real) | 2.0 |
+
+See [pydimension/configs/README.md](pydimension/configs/README.md) for details.
 
 ## Interfaces
 
@@ -284,22 +326,30 @@ Features: Interactive configuration, real-time execution, inline visualization, 
 ### Command-Line Interface
 
 ```bash
-# Run any module
-python -m pydimension.module_name --config pydimension/configs/config_synthetic.json
+# Run any module directly
+python -m pydimension.data_generation --config pydimension/configs/config_translation.json --plot
 
 # Or use convenience scripts
-python generate_data.py --config pydimension/configs/config_synthetic.json
+python generate_data.py --config pydimension/configs/config_translation.json --plot
+python discover_symmetry.py --config pydimension/configs/config_translation.json
 ```
 
 ### Python API
 
 ```python
 from pydimension.data_generation import DataGenerator, DataGenerationConfig
+from pydimension.symmetry_discovery import SymmetryDiscoveryEngine, SymmetryDiscoveryConfig
 
-config = DataGenerationConfig.from_json('pydimension/configs/config_synthetic.json')
-generator = DataGenerator(config)
+# Generate data
+gen_config = DataGenerationConfig.from_json('pydimension/configs/config_translation.json')
+generator = DataGenerator(gen_config)
 generator.generate()
 generator.save_datasets()
+
+# Discover symmetry
+sd_config = SymmetryDiscoveryConfig.from_json('pydimension/configs/config_translation.json')
+engine = SymmetryDiscoveryEngine(sd_config)
+artifacts = engine.process(verbose=True)
 ```
 
 ## Documentation
@@ -334,12 +384,12 @@ output/
 
 ## Contributing
 
-When adding new modules:
-1. Follow the established module structure
-2. Create comprehensive documentation (README.md)
-3. Provide example configuration files
-4. Implement both CLI and Python API
-5. Add validation and error handling
+When adding a new symmetry type or module:
+1. Follow the established module structure (see `projects/20260308_CODE_STRUCTURE/task.md`)
+2. Add a benchmark descriptor in `pydimension/benchmarks/`
+3. Create a JSON config file in `pydimension/configs/`
+4. Implement the shared base interfaces (`BaseSymmetryEncoder`, `BaseIntrinsicCoordinateMethod`, etc.)
+5. Update `pydimension/__init__.py` and module READMEs
 
 ## License
 

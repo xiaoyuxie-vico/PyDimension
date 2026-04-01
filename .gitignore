@@ -1,5 +1,6 @@
 # Output directories
 output/
+output_*/
 *.csv
 # Exception: track CSV files in dataset/keyhole
 !dataset/keyhole/*.csv

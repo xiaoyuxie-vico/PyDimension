@@ -1,36 +1,60 @@
 """
-PyDimension 2.0 - Dimensionless Learning Package
+PyDimension - Symmetry Discovery from Data
 
-A comprehensive Python package for discovering dimensionless relationships
-in physical systems using machine learning and dimensional analysis.
+A modular Python package for discovering hidden symmetries in physical
+systems using data and machine learning.  Dimensionless learning is one
+module within this broader framework (the scaling-symmetry case).
 """
 
-__version__ = "2.0.0"
+__version__ = "3.0.0-dev"
 
-# Import main classes from each module
+# -------------------------------------------------------------------
+# PyDimension 3.0 (OpenSymmetry) public API
+# -------------------------------------------------------------------
 from .data_generation import DataGenerator, DataGenerationConfig
-from .data_preprocessing import DataPreprocessor, DataPreprocessingConfig
-from .dimensional_analysis import DimensionalAnalyzer, DimensionalAnalysisConfig
-from .constraint_filtering import ConstraintFilterer, ConstraintFilteringConfig
-from .optimization_discovery import OptimizationDiscoverer, OptimizationDiscoveryConfig
+from .data_preprocessing import (
+    DataPreprocessor,
+    DataPreprocessingConfig,
+    DataPreprocessingPipeline,
+    run_dimensional_analysis_preprocessing,
+)
+from .intrinsic_coordinate import (
+    IntrinsicCoordinateConfig,
+    IntrinsicCoordinateFinder,
+)
+from .symmetry_discovery import (
+    SymmetryDiscoveryConfig,
+    SymmetryDiscoveryEngine,
+)
+
+# -------------------------------------------------------------------
+# Legacy 2.0 classes (kept for backward compatibility, now in legacy/)
+# -------------------------------------------------------------------
+from legacy.pydimension_v2.dimensional_analysis import DimensionalAnalyzer, DimensionalAnalysisConfig
+from legacy.pydimension_v2.constraint_filtering import ConstraintFilterer, ConstraintFilteringConfig
+from legacy.pydimension_v2.optimization_discovery import OptimizationDiscoverer, OptimizationDiscoveryConfig
 
 __all__ = [
-    # Version
     "__version__",
-    # Data Generation
+    # 3.0 data generation
     "DataGenerator",
     "DataGenerationConfig",
-    # Data Preprocessing
+    # 3.0 data preprocessing (with DA merged)
     "DataPreprocessor",
     "DataPreprocessingConfig",
-    # Dimensional Analysis
+    "DataPreprocessingPipeline",
+    "run_dimensional_analysis_preprocessing",
+    # 3.0 intrinsic coordinate
+    "IntrinsicCoordinateConfig",
+    "IntrinsicCoordinateFinder",
+    # 3.0 symmetry discovery
+    "SymmetryDiscoveryConfig",
+    "SymmetryDiscoveryEngine",
+    # Legacy 2.0
     "DimensionalAnalyzer",
     "DimensionalAnalysisConfig",
-    # Dimensional Filtering
     "ConstraintFilterer",
     "ConstraintFilteringConfig",
-    # Optimization Discovery
     "OptimizationDiscoverer",
     "OptimizationDiscoveryConfig",
 ]
-

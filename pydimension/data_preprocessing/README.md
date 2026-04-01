@@ -2,6 +2,22 @@
 
 Preprocess datasets by selecting variables, normalizing data, and generating dimension matrices for dimensionless learning pipelines.
 
+## PyDimension 3.0 Note
+
+In the migration toward OpenSymmetry, `data_preprocessing` is now the broader preprocessing stage. Dimensional analysis is merged directly into `DataPreprocessor` and the unified pipeline, rather than living in a separate 3.0 file:
+
+```python
+from pydimension.data_preprocessing import DataPreprocessingConfig, DataPreprocessingPipeline
+
+config = DataPreprocessingConfig(
+    input_file="output/data/dataset_synthetic.csv",
+    preprocessing_method="dimensional_analysis",
+)
+artifacts = DataPreprocessingPipeline(config).run(verbose=True)
+```
+
+This is the first implemented 3.0 preprocessing method and is the path used by `run_pipeline_v3.py`.
+
 ## Overview
 
 The data preprocessing module prepares datasets for dimensional analysis by:

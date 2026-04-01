@@ -2,146 +2,71 @@
 
 **All configuration files for PyDimension should be maintained in this directory** (`pydimension/configs/`).
 
-This directory contains example configuration files for PyDimension modules.
+## Config Families
 
-## Unified Config File Structure
+PyDimension carries three config families that correspond to different symmetry types and pipeline versions:
 
-The recommended approach is to use a **unified config file** (`config_synthetic.json`) that contains settings for all modules. This allows you to:
+| Config file | Pipeline | Symmetry type | Status |
+|---|---|---|---|
+| `config_synthetic.json` | Legacy 2.0 | translational | production |
+| `config_synthetic_with_noise.json` | Legacy 2.0 | translational (5% noise) | production |
+| `config_keyhole.json` | Legacy 2.0 | translational (real data) | production |
+| `config_translation.json` | 3.0 | translational | active |
+| `config_translation_v3.json` | 3.0 | translational (alias) | kept for backward compat |
+| `config_rotation.json` | 3.0 | rotational | scaffold |
+| `config_scaling.json` | 3.0 | scaling | scaffold |
 
-- Configure the entire pipeline in one place
-- Easily enable/disable modules
-- Maintain consistent output directories
-- Extend with new modules without breaking existing configs
+The 2.0 benchmark also has a frozen copy at `legacy/pydimension_v2/configs/config_synthetic_v2.json`.
 
-### Unified Config Format
+## Config Section Naming (3.0)
+
+The 3.0 config uses section names that match the new module names:
 
 ```json
 {
-  "DATA_GENERATION": {
-    "N": 7,
-    "M": 100,
-    "ndim": 1,
-    "poly_order": 1,
-    "random_seed": 32,
-    "noise_level": 0.0,
-    "coefficients": [2.0, 1.0]
-  },
-  "DATA_PREPROCESSING": {
-    "enabled": false,
-    ...
-  },
-  "DIMENSIONAL_ANALYSIS": {
-    "enabled": false,
-    ...
-  },
-  "CONSTRAINT_FILTERING": {
-    "enabled": false,
-    ...
-  },
-  "NEURAL_NETWORK_TRAINING": {
-    "enabled": false,
-    ...
-  },
-  "OPTIMIZATION_DISCOVERY": {
-    "enabled": false
-  },
-  "OUTPUT": {
-    "output_dir": "output",
-    "data_dir": "data",
-    "figures_dir": "figures",
-    "results_dir": "results",
-    "logs_dir": "logs"
-  },
-  "DATA_GENERATION_OUTPUT": {
-    "dataset_filename": "dataset_synthetic.csv",
-    "dimension_matrix_filename": "dimension_matrix_synthetic.csv",
-    "plot_filename": "data_generation_plots.png"
-  },
-  "DATA_PREPROCESSING_OUTPUT": {
-    "normalized_data_filename": "normalized_data.csv",
-    "dimension_matrix_filename": "dimension_matrix.csv",
-    "plot_filename": "data_preprocessing_plots.png"
-  },
-  "DIMENSIONAL_ANALYSIS_OUTPUT": {
-    "afterDA_data_filename": "afterDA_data.csv",
-    "basis_vectors_filename": "basis_vectors.csv",
-    "normalized_lg_data_filename": "normalized_lg_afterDA_data.csv",
-    "plot_filename": "dimensional_analysis_plots.png"
-  },
-  "CONSTRAINT_FILTERING_OUTPUT": {
-    "pca_results_filename": "pca_results.json",
-    "sir_results_filename": "sir_results.json",
-    "plot_filename": "constraint_filtering_plots.png",
-    "suggested_count_filename": "suggested_dominant_count.json"
-  },
-  "OPTIMIZATION_DISCOVERY_OUTPUT": {
-    "model_results_filename": "optimization_discovery_results.json",
-    "plot_filename": "optimization_discovery_plots.png"
-  }
+  "DATA_GENERATION": { },
+  "DATA_PREPROCESSING": { "preprocessing_method": "dimensional_analysis" },
+  "INTRINSIC_COORDINATE": { "method": "pca_sir" },
+  "SYMMETRY_DISCOVERY": { "symmetry_type": "translational", "encoder_name": "translational" },
+  "OUTPUT": { "output_dir": "output_v3_translation" },
+  "DATA_GENERATION_OUTPUT": { },
+  "DATA_PREPROCESSING_OUTPUT": { },
+  "DIMENSIONAL_ANALYSIS_OUTPUT": { },
+  "INTRINSIC_COORDINATE_OUTPUT": { },
+  "SYMMETRY_DISCOVERY_OUTPUT": { }
 }
 ```
 
-### Config Sections
-
-1. **Module Sections** (e.g., `DATA_GENERATION`, `DATA_PREPROCESSING`, etc.):
-   - Each module has its own section
-   - Contains module-specific parameters
-   - Can have an `enabled` flag to control execution
-
-2. **OUTPUT Section**:
-   - Shared output directory structure
-   - Used by all modules
-   - Defines: `output_dir`, `data_dir`, `figures_dir`, `results_dir`, `logs_dir`
-
-3. **Module-Specific Output Sections** (e.g., `DATA_GENERATION_OUTPUT`):
-   - Module-specific filenames
-   - Overrides or supplements the OUTPUT section
-
-## Available Config Files
-
-- **`config_synthetic.json`**: Main unified config file with all modules (data generation enabled)
-- **`config_synthetic_with_noise.json`**: Unified config with 5% noise enabled
+Legacy 2.0 sections (`CONSTRAINT_FILTERING`, `OPTIMIZATION_DISCOVERY`) are still accepted as fallbacks by the config loaders, so existing user configs continue to work.
 
 ## Usage
 
-### Using Config Files
-
 ```bash
-# With generate_data.py
-python generate_data.py --config pydimension/configs/config_synthetic.json --plot
+# 3.0 translational pipeline
+python run_pipeline.py --pipeline-version v3 --config pydimension/configs/config_translation.json
 
-# With module CLI
-python -m pydimension.data_generation --config pydimension/configs/config_synthetic.json --plot
+# Legacy 2.0 benchmark
+python run_pipeline.py --pipeline-version v2 --config legacy/pydimension_v2/configs/config_synthetic_v2.json
+
+# Individual modules
+python generate_data.py --config pydimension/configs/config_synthetic.json --plot
+python preprocess_data.py --config pydimension/configs/config_synthetic.json --plot
+python discover_symmetry.py --config pydimension/configs/config_translation.json
 ```
 
 ## Extending the Config
 
-When adding a new module:
+When adding a new symmetry type or module:
 
-1. Add a new section (e.g., `YOUR_MODULE`) with module-specific parameters
-2. Add an `enabled` flag to control execution
-3. Optionally add a `YOUR_MODULE_OUTPUT` section for module-specific filenames
-4. Update the OUTPUT section if new directories are needed
-
-Example:
-```json
-{
-  "YOUR_MODULE": {
-    "enabled": true,
-    "param1": value1,
-    "param2": value2
-  },
-  "YOUR_MODULE_OUTPUT": {
-    "output_filename": "your_output.csv"
-  }
-}
-```
+1. Copy an existing config file (e.g., `config_translation.json`).
+2. Update `SYMMETRY_DISCOVERY.symmetry_type` and `encoder_name`.
+3. Update `OUTPUT.output_dir` to a new directory name.
+4. Add any module-specific parameters.
+5. Register the corresponding benchmark in `pydimension/benchmarks/`.
 
 ## Config File Priority
 
 When loading configs, the system checks in this order:
-1. Unified OUTPUT section
-2. Module-specific OUTPUT section (e.g., DATA_GENERATION_OUTPUT)
-
-This ensures consistent configuration across all modules.
-
+1. Unified `OUTPUT` section for shared output paths.
+2. Module-specific output sections (e.g., `SYMMETRY_DISCOVERY_OUTPUT`) for filenames.
+3. Legacy fallback sections (e.g., `OPTIMIZATION_DISCOVERY`) for backward compatibility.

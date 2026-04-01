@@ -65,9 +65,12 @@ setup(
         "console_scripts": [
             "pydimension-generate=pydimension.data_generation.__main__:main",
             "pydimension-preprocess=pydimension.data_preprocessing.__main__:main",
-            "pydimension-analyze=pydimension.dimensional_analysis.__main__:main",
-            "pydimension-filter=pydimension.constraint_filtering.__main__:main",
-            "pydimension-optimize=pydimension.optimization_discovery.__main__:main",
+            "pydimension-intrinsic=intrinsic_coordinate:main",
+            "pydimension-symmetry=discover_symmetry:main",
+            # Legacy 2.0 entry points (modules now in legacy/)
+            "pydimension-analyze=legacy.pydimension_v2.dimensional_analysis.__main__:main",
+            "pydimension-filter=legacy.pydimension_v2.constraint_filtering.__main__:main",
+            "pydimension-optimize=legacy.pydimension_v2.optimization_discovery.__main__:main",
         ],
     },
     classifiers=[
