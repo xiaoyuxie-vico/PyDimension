@@ -169,7 +169,7 @@ python run_pipeline.py --pipeline-version v3 --config pydimension/configs/config
 
 See [docs/SETUP.md](docs/SETUP.md) for detailed instructions and troubleshooting.
 
-### Docker
+**Option 5: Docker**
 
 Pre-built image available on Docker Hub — no local Python setup needed.
 
