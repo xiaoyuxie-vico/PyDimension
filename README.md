@@ -43,7 +43,7 @@ This redesign follows a first-principles approach: use simple module boundaries,
 
 The current architecture task is documented in `projects/20260308_CODE_STRUCTURE/task.md`.
 
-## Benchmark And Migration Status
+## Benchmark and Migration Status
 
 The repository now carries two runnable paths during the 3.0 migration:
 
@@ -57,7 +57,7 @@ The first parity milestone is now wired end-to-end:
 - `run_pipeline.py` dispatches between them with `--pipeline-version v2|v3`
 - the key translational benchmark artifacts match between the two paths, with symmetry-discovery JSON differences limited to timestamps and output-path metadata
 
-## Who is PyDimension for?
+## Who Is PyDimension For?
 
 - **Experimentalists and engineers** who want to identify which hidden symmetries or invariant structures control their system (e.g., flow, heat transfer, additive manufacturing).
 - **Data and ML practitioners** looking for **interpretable, physics-aware models** instead of black-box predictors.
@@ -153,7 +153,7 @@ python test_environment.py
 python run_pipeline.py --pipeline-version v3 --config pydimension/configs/config_translation.json
 ```
 
-**Option 4: pip (Alternative)**
+**Option 4: Pip (Alternative)**
 ```bash
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
