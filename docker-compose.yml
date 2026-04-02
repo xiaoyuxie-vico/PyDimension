@@ -1,0 +1,18 @@
+services:
+  # Streamlit web interface (default)
+  app:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./output:/app/output          # persist generated results
+      - ./dataset:/app/dataset:ro     # mount local datasets (read-only)
+
+  # Run the full v3 pipeline (one-shot)
+  pipeline:
+    build: .
+    command: python run_pipeline.py --pipeline-version v3 --config pydimension/configs/config_translation.json
+    volumes:
+      - ./output:/app/output
+      - ./dataset:/app/dataset:ro
+    profiles: ["cli"]                 # only starts with: docker compose --profile cli run pipeline

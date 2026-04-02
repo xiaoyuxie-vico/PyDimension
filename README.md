@@ -169,6 +169,36 @@ python run_pipeline.py --pipeline-version v3 --config pydimension/configs/config
 
 See [docs/SETUP.md](docs/SETUP.md) for detailed instructions and troubleshooting.
 
+**Option 5: Docker**
+
+Pre-built image available on Docker Hub — no local Python setup needed.
+
+```bash
+# Launch the Streamlit web interface
+docker run -p 8501:8501 wingsweihua/pydimension
+# Then open http://localhost:8501
+
+# Run the full v3 pipeline
+docker run -v $(pwd)/output:/app/output wingsweihua/pydimension \
+  python run_pipeline.py --pipeline-version v3 --config pydimension/configs/config_translation.json
+
+# Run individual stages
+docker run -v $(pwd)/output:/app/output wingsweihua/pydimension \
+  python generate_data.py --config pydimension/configs/config_translation.json --plot
+```
+
+With Docker Compose:
+
+```bash
+# Start the web interface
+docker compose up app
+
+# Run the CLI pipeline
+docker compose --profile cli run pipeline
+```
+
+Results are written to the `./output` directory on your host machine.
+
 ### Web Interface
 
 ```bash
