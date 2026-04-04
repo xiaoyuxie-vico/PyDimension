@@ -227,7 +227,7 @@ For the migration path toward OpenSymmetry, the current v3 pipeline is:
 
 ### Key Features
 
-- **Modular Architecture** - Each module is independent and can be used standalone
+- **Modular Architecture** - Each module is independent and can be used as a standalone module.
 - **Config-Based** - JSON configuration files for reproducibility
 - **Multiple Interfaces** - Command-line, Python API, and web interface
 - **Extensible Design** - Easy to add new modules
