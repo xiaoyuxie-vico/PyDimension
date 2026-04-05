@@ -34,7 +34,7 @@ Usage
     python discover_symmetry.py --data lhc_dijet_data.pt
 
     # With synthetic LHC-like data (no external files needed):
-    python discover_symmetry.py --synthetic
+    python discover_symmetry.py --data lhc_dijet_data.pt
 """
 
 import sys
@@ -74,39 +74,6 @@ _tmp.cpu_count = lambda: 0
 # 1. Data loading / generation
 # ──────────────────────────────────────────────────────────────────────────────
 
-def generate_synthetic_lhc_data(n_samples: int = 5000, seed: int = 42) -> np.ndarray:
-    """
-    Generate synthetic data mimicking LHC dijet kinematics.
-
-    Each event is two back-to-back jets in the transverse plane with realistic
-    pT spectrum (exponentially falling) and approximate momentum conservation.
-
-    Returns X with columns [p1x, p1y, p2x, p2y].
-    """
-    rng = np.random.default_rng(seed)
-
-    # Realistic pT spectrum: exponential + power-law tail
-    # pT ~ exp(-pT / <pT>) with <pT> ~ 100-500 GeV
-    pT1 = rng.exponential(scale=200.0, size=n_samples) + 50.0
-    pT2 = rng.exponential(scale=180.0, size=n_samples) + 50.0
-
-    # Random azimuthal angle for jet 1
-    phi1 = rng.uniform(-np.pi, np.pi, size=n_samples)
-
-    # Jet 2 is approximately back-to-back (phi2 ~ phi1 + pi) with smearing
-    # from ISR/FSR and underlying event
-    delta_phi_smear = rng.normal(0, 0.15, size=n_samples)
-    phi2 = phi1 + np.pi + delta_phi_smear
-
-    # Convert to Cartesian
-    p1x = pT1 * np.cos(phi1)
-    p1y = pT1 * np.sin(phi1)
-    p2x = pT2 * np.cos(phi2)
-    p2y = pT2 * np.sin(phi2)
-
-    X = np.column_stack([p1x, p1y, p2x, p2y])
-    return X
-
 
 def compute_dijet_mass(X: np.ndarray) -> np.ndarray:
     """
@@ -131,21 +98,20 @@ def compute_dijet_mass(X: np.ndarray) -> np.ndarray:
 
 
 def load_data(args) -> tuple:
-    """Load or generate data, return (X, y) as numpy arrays."""
-    if args.synthetic:
-        print("=" * 60)
-        print("Generating synthetic LHC-like dijet data...")
-        print("=" * 60)
-        X = generate_synthetic_lhc_data(n_samples=args.n_samples, seed=args.seed)
-    elif args.data and os.path.exists(args.data):
+    """Load prepared LHC data, return (X, y) as numpy arrays."""
+    if args.data and os.path.exists(args.data):
         print("=" * 60)
         print(f"Loading prepared LHC data from {args.data}...")
         print("=" * 60)
         X_tensor = torch.load(args.data, weights_only=True)
         X = X_tensor.cpu().numpy()
     else:
-        print(f"Data file '{args.data}' not found. Using synthetic data as fallback.")
-        X = generate_synthetic_lhc_data(n_samples=args.n_samples, seed=args.seed)
+        print(f"ERROR: Data file '{args.data}' not found.")
+        print(f"Please run prepare_data.py first to create the data file:")
+        print(f"  python prepare_data.py --input events_anomalydetection_v2.h5")
+        print(f"Then run this script with:")
+        print(f"  python discover_symmetry.py --data lhc_dijet_data.pt")
+        sys.exit(1)
 
     print(f"  Events: {X.shape[0]}")
     print(f"  Features: {X.shape[1]} (p1x, p1y, p2x, p2y)")
@@ -457,10 +423,6 @@ def main():
     )
     parser.add_argument("--data", default="lhc_dijet_data.pt",
                         help="Path to prepared data tensor (.pt file)")
-    parser.add_argument("--synthetic", action="store_true",
-                        help="Use synthetic LHC-like data instead of real data")
-    parser.add_argument("--n-samples", type=int, default=5000,
-                        help="Number of synthetic events to generate")
     parser.add_argument("--seed", type=int, default=42,
                         help="Random seed for reproducibility")
     parser.add_argument("--latent-epochs", type=int, default=600,
