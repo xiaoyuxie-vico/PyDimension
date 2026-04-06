@@ -9,7 +9,7 @@ A modular Python package for **symmetry discovery from data** in physical system
 **🌐 [Streamlit Web App](https://huggingface.co/spaces/xiaoyuxie-vico/PyDimension)** - Run PyDimension in your browser (no installation required)
 
 
-> **What is this?** PyDimension is evolving toward **OpenSymmetry**: a modular framework for discovering hidden symmetries from data, including scaling, translational, rotational, and related invariance structures.
+> **What is this?** PyDimension is evolving towards **OpenSymmetry**: a modular framework for discovering hidden symmetries from data, including scaling, translational, rotational, and related invariance structures.
 > In this framework, **dimensionless learning** is one important module rather than the whole story: it is the scaling-symmetry case, and dimensionless groups are one concrete representation of that symmetry structure.
 > The current repository still preserves the production-ready implementation of the dimensionless-learning method from the Nature Communications paper *“Data-driven discovery of dimensionless numbers and governing laws from scarce measurements”*, while expanding toward broader symmetry discovery.
 
