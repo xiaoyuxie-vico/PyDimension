@@ -7,7 +7,17 @@ For n_latent = 1, 2, ..., max_latent:
 
 Select the minimal n_latent where R² first exceeds the threshold (elbow method
 with R² > threshold as fallback).
+
+Optional enhancements (professor-recommended):
+    - Multi-layer encoder: pass ``encoder_hidden_dims`` to use an MLP encoder
+      instead of a single linear layer.  More expressive for latent dimension
+      discovery; interpretability is not needed at this stage.
+    - Pi group augmentation: pass ``pi_basis_vectors`` (null-space of the
+      dimension matrix) to compute dimensionless Pi groups and append them
+      as extra encoder inputs, giving the encoder a physics-informed head start.
 """
+
+from typing import List, Optional
 
 import numpy as np
 import torch
@@ -16,6 +26,28 @@ import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 
 from .autoencoder import IntrinsicCoordinateAutoencoder
+
+
+def _compute_pi_groups(X: np.ndarray, basis_vectors: np.ndarray) -> np.ndarray:
+    """Compute dimensionless Pi groups from raw data and basis vectors.
+
+    Parameters
+    ----------
+    X : (n_samples, n_inputs)
+        Raw (positive, normalised) input data.
+    basis_vectors : (n_inputs, n_groups)
+        Null-space basis of the dimension matrix.  Each column is a set of
+        exponents defining one Pi group: π_i = prod(x_j ^ basis[j, i]).
+
+    Returns
+    -------
+    pi_groups : (n_samples, n_groups)
+    """
+    # log-space computation for numerical stability (same as preprocessor.py)
+    X_safe = np.maximum(np.abs(X), 1e-10)
+    log_X = np.log(X_safe)                        # (n_samples, n_inputs)
+    log_pi = log_X @ basis_vectors                 # (n_samples, n_groups)
+    return np.exp(log_pi)
 
 
 def _r2_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -84,6 +116,8 @@ def discover_latent_dimension(
     n_restarts: int = 3,
     seed: int = 0,
     device: str = "auto",
+    encoder_hidden_dims: Optional[List[int]] = None,
+    pi_basis_vectors: Optional[np.ndarray] = None,
 ) -> dict:
     """
     Sweep n_latent from 1 to max_latent, train an autoencoder for each,
@@ -108,6 +142,13 @@ def discover_latent_dimension(
         Minimum R² to consider a latent dimension sufficient.
     seed : int
         Random seed for train/val split and weight init.
+    encoder_hidden_dims : list of int, optional
+        Hidden layer widths for a multi-layer encoder MLP.
+        If None (default), the encoder is a single linear layer.
+    pi_basis_vectors : (n_inputs, n_groups) array, optional
+        Null-space basis of the dimension matrix.  When provided,
+        dimensionless Pi groups are computed from X and appended as
+        extra encoder inputs: [X, X², log|X|, π₁...πₘ].
 
     Returns
     -------
@@ -127,14 +168,30 @@ def discover_latent_dimension(
     np.random.seed(seed)
 
     n_samples, n_inputs = X.shape
+
+    # --- Compute Pi groups if basis vectors are provided ---
+    n_pi_groups = 0
+    if pi_basis_vectors is not None:
+        pi_groups = _compute_pi_groups(X, pi_basis_vectors)
+        n_pi_groups = pi_groups.shape[1]
+        X_aug_np = np.hstack([X, pi_groups])  # (n_samples, n_inputs + n_pi)
+        print(f"  Pi group augmentation: {n_pi_groups} groups appended "
+              f"→ encoder input dim = 3×{n_inputs} + {n_pi_groups} = "
+              f"{3 * n_inputs + n_pi_groups}")
+    else:
+        X_aug_np = X
+
     n_val = int(n_samples * val_fraction)
     idx = np.random.permutation(n_samples)
     val_idx, train_idx = idx[:n_val], idx[n_val:]
 
-    X_tr = torch.tensor(X[train_idx], dtype=torch.float32)
+    X_tr = torch.tensor(X_aug_np[train_idx], dtype=torch.float32)
     y_tr = torch.tensor(y[train_idx], dtype=torch.float32).unsqueeze(1)
-    X_val = torch.tensor(X[val_idx], dtype=torch.float32)
+    X_val = torch.tensor(X_aug_np[val_idx], dtype=torch.float32)
     y_val_np = y[val_idx]
+
+    if encoder_hidden_dims is not None:
+        print(f"  Multi-layer encoder: {encoder_hidden_dims}")
 
     metrics = {}
     models  = {}
@@ -148,7 +205,11 @@ def discover_latent_dimension(
         # Multiple restarts: keep best R² to reduce variance from random init
         for restart in range(n_restarts):
             torch.manual_seed(seed + k * 100 + restart)
-            model = IntrinsicCoordinateAutoencoder(n_inputs, k, hidden_dim).to(_device)
+            model = IntrinsicCoordinateAutoencoder(
+                n_inputs, k, hidden_dim,
+                encoder_hidden_dims=encoder_hidden_dims,
+                n_pi_groups=n_pi_groups,
+            ).to(_device)
             _train_autoencoder(model, X_tr, y_tr, n_epochs, batch_size, lr, _device)
 
             model.eval()

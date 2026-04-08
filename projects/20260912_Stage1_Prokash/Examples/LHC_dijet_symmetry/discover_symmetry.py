@@ -150,12 +150,17 @@ def run_pipeline(X: np.ndarray, y: np.ndarray, args) -> dict:
     print("Step 2: Discovering intrinsic latent dimension")
     print("=" * 60)
     sys.stdout.flush()
+    enc_kwargs = {}
+    if getattr(args, "encoder_hidden", None):
+        enc_kwargs["encoder_hidden_dims"] = args.encoder_hidden
+
     res_latent = discover_latent_dimension(
         X_norm, y_norm,
         max_latent=4,
         n_epochs=args.latent_epochs,
         n_restarts=args.n_restarts,
         seed=args.seed,
+        **enc_kwargs,
     )
     n_latent = res_latent["optimal_n_latent"]
     results["latent"] = res_latent
@@ -433,6 +438,8 @@ def main():
                         help="Number of random restarts per model")
     parser.add_argument("--output-dir", default="output_lhc_symmetry",
                         help="Directory for output figures and summary")
+    parser.add_argument("--encoder-hidden", type=int, nargs="+", default=None,
+                        help="Hidden layer widths for multi-layer encoder (e.g. --encoder-hidden 64 32)")
     args = parser.parse_args()
 
     # Load data

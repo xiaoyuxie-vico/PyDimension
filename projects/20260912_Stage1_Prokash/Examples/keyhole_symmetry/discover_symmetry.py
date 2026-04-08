@@ -185,15 +185,25 @@ def run_pipeline(X, y, Ke, args):
     print("Step 2: Discovering intrinsic latent dimension")
     print("=" * 60)
     sys.stdout.flush()
+    # Optional: multi-layer encoder and Pi group augmentation
+    enc_kwargs = {}
+    if getattr(args, "encoder_hidden", None):
+        enc_kwargs["encoder_hidden_dims"] = args.encoder_hidden
+    if getattr(args, "pi_basis", False):
+        # Use known Ke exponents as Pi group basis (1 group)
+        enc_kwargs["pi_basis_vectors"] = KNOWN_KE_EXPONENTS.reshape(-1, 1)
+
     res_latent = discover_latent_dimension(
         X_norm, y_norm, max_latent=4,
         n_epochs=args.latent_epochs, n_restarts=args.n_restarts, seed=args.seed,
+        **enc_kwargs,
     )
     results["latent"] = res_latent
     n_latent = res_latent["optimal_n_latent"]
     print(f"\n  Optimal latent dimension: {n_latent}")
     for k, m in res_latent["metrics"].items():
-        print(f"    k={k}: R2={m['R2']:.4f}")
+        r2_tr = m.get("R2_train", float("nan"))
+        print(f"    k={k}: R2_train={r2_tr:.4f}, R2_test={m['R2']:.4f}, MSE={m['MSE']:.6f}")
     print()
 
     # --- Identify symmetry type ---
@@ -387,6 +397,10 @@ def main():
     parser.add_argument("--sym-epochs", type=int, default=1500)
     parser.add_argument("--n-restarts", type=int, default=3)
     parser.add_argument("--output-dir", default="output_keyhole_symmetry")
+    parser.add_argument("--encoder-hidden", type=int, nargs="+", default=None,
+                        help="Hidden layer widths for multi-layer encoder (e.g. --encoder-hidden 64 32)")
+    parser.add_argument("--pi-basis", action="store_true",
+                        help="Augment encoder input with known Ke Pi group")
     args = parser.parse_args()
 
     X, y, Ke = load_data(args)
