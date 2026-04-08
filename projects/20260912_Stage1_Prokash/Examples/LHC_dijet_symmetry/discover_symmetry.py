@@ -20,7 +20,7 @@ The expected symmetry is SO(2) rotation with generator:
 
 Pipeline
 --------
-    1. Load prepared data (or generate synthetic LHC-like data as fallback)
+    1. Load prepared data (run prepare_data.py first)
     2. Compute output: dijet transverse mass m_jj_T
     3. Normalize data
     4. Discover latent dimension (autoencoder sweep)
@@ -30,11 +30,9 @@ Pipeline
 
 Usage
 -----
-    # With real LHC data (run prepare_data.py first):
+    python prepare_data.py           # download & prepare LHC Olympics data
     python discover_symmetry.py --data lhc_dijet_data.pt
-
-    # With synthetic LHC-like data (no external files needed):
-    python discover_symmetry.py --data lhc_dijet_data.pt
+    python discover_symmetry.py --data lhc_dijet_data.pt --encoder-hidden 64 32
 """
 
 import sys
@@ -46,10 +44,17 @@ import multiprocessing
 import numpy as np
 import torch
 
-# Add the Stage1 project to the path
+# Add the Stage1 project to the path — try multiple locations
 _here = os.path.dirname(os.path.abspath(__file__))
-_stage1 = os.path.join(os.path.dirname(_here), "..", "projects", "20260912_Stage1_Prokash")
-sys.path.insert(0, _stage1)
+for _candidate in [
+    os.path.join(_here, "..", ".."),
+    os.path.join(_here, "..", "..", "projects", "20260912_Stage1_Prokash"),
+    _here,
+]:
+    _candidate = os.path.abspath(_candidate)
+    if os.path.isdir(os.path.join(_candidate, "preprocessing")):
+        sys.path.insert(0, _candidate)
+        break
 
 try:
     import matplotlib
@@ -58,10 +63,15 @@ except (AttributeError, ImportError):
     pass
 import matplotlib.pyplot as plt
 
-from preprocessing.normalize import normalize_data
-from intrinsic_coordinate.discovery import discover_latent_dimension
-from symmetry_discovery.identification import identify_symmetry
-from symmetry_discovery.generators import extract_generators, generator_orbit
+try:
+    from preprocessing.normalize import normalize_data
+    from intrinsic_coordinate.discovery import discover_latent_dimension
+    from symmetry_discovery.identification import identify_symmetry
+    from symmetry_discovery.generators import extract_generators, generator_orbit
+except ImportError as e:
+    print(f"ERROR: Could not import Stage1 modules: {e}")
+    print(f"Run from projects/20260912_Stage1_Prokash/Examples/LHC_dijet_symmetry/")
+    sys.exit(1)
 
 # On Windows, multiprocessing workers silently crash without freeze_support.
 # Also monkey-patch torch.multiprocessing.cpu_count to return 0 so that

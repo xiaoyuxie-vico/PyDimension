@@ -58,11 +58,12 @@ how much of one ingredient compensates for another.
 ## Usage
 
 ```bash
-# With real UCI data (place file in this directory):
+# With UCI data (place file in this directory):
 python discover_symmetry.py --data Concrete_Data.xls
+python discover_symmetry.py --data Concrete_Data.csv
 
-# With synthetic data (no external files needed):
-python discover_symmetry.py --synthetic
+# With multi-layer encoder:
+python discover_symmetry.py --data Concrete_Data.csv --encoder-hidden 64 32
 ```
 
 ## Expected Results

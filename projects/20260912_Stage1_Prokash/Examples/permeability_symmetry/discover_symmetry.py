@@ -69,41 +69,6 @@ FEATURE_NAMES = ["cos(2θ)", "sin(2θ)"]
 # Data loading
 # ──────────────────────────────────────────────────────────────────────────────
 
-def generate_synthetic_data(n_geometries=180, seed=42):
-    """
-    Synthetic data: 180 geometries x 37 angles (0-360 in 10° steps) = 6660 rows.
-    Each geometry has fixed Porosity and Surface_A.
-    Permeability oscillates with 180° period within each geometry.
-    """
-    rng = np.random.default_rng(seed)
-    angles = np.arange(0, 370, 10)  # 37 angles
-    n_angles = len(angles)
-
-    all_angle = []
-    all_porosity = []
-    all_surface_a = []
-    all_y = []
-
-    for i in range(n_geometries):
-        por = rng.uniform(60, 63)
-        sa = rng.uniform(5800, 6600)
-        amp = rng.uniform(0.1, 0.5)
-        phase = rng.uniform(0, 180)
-
-        angle_rad = np.radians(angles)
-        baseline = 3.2 + 0.05 * (por - 61) + 0.0003 * (sa - 6200)
-        perm = baseline + amp * np.cos(2 * angle_rad - np.radians(2 * phase))
-        perm += rng.normal(0, 0.03, n_angles)
-
-        all_angle.extend(angles)
-        all_porosity.extend([por] * n_angles)
-        all_surface_a.extend([sa] * n_angles)
-        all_y.extend(perm)
-
-    return (np.array(all_angle), np.array(all_porosity),
-            np.array(all_surface_a), np.array(all_y))
-
-
 def load_csv_data(csv_path):
     """Load Angle, Porosity, Surface_A, Permeability_X from CSV/Excel."""
     ext = os.path.splitext(csv_path)[1].lower()
@@ -146,19 +111,18 @@ def load_csv_data(csv_path):
 
 def load_data(args):
     """Load data, decompose angle into cos(2θ), sin(2θ)."""
-    if args.synthetic:
-        print("Generating synthetic data...")
-        angle, porosity, surface_a, y = generate_synthetic_data(args.n_geometries, args.seed)
-    else:
-        data_path = args.data
-        if not os.path.exists(data_path):
-            data_path = os.path.join(_here, args.data)
-        if os.path.exists(data_path):
-            print(f"Loading from {data_path}...")
-            angle, porosity, surface_a, y = load_csv_data(data_path)
-        else:
-            print(f"'{args.data}' not found. Using synthetic.")
-            angle, porosity, surface_a, y = generate_synthetic_data(args.n_geometries, args.seed)
+    data_path = args.data
+    if not os.path.exists(data_path):
+        data_path = os.path.join(_here, args.data)
+    if not os.path.exists(data_path):
+        print(f"ERROR: Data file not found: {args.data}")
+        print(f"Place your permeability CSV (with Angle, Porosity, Surface_A, Permeability_X)")
+        print(f"in {_here}/ and run:")
+        print(f"  python discover_symmetry.py --data permeability.csv")
+        sys.exit(1)
+
+    print(f"Loading from {data_path}...")
+    angle, porosity, surface_a, y = load_csv_data(data_path)
 
     angle_rad = np.radians(angle)
     X = np.column_stack([
@@ -409,8 +373,6 @@ def main():
         description="Discover symmetry in porous media permeability"
     )
     parser.add_argument("--data", default="permeability.csv")
-    parser.add_argument("--synthetic", action="store_true")
-    parser.add_argument("--n-geometries", type=int, default=180)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--latent-epochs", type=int, default=600)
     parser.add_argument("--sym-epochs", type=int, default=1500)

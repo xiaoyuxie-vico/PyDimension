@@ -25,11 +25,9 @@ UCI ML Repository dataset #165 (I-Cheng Yeh, 1998):
 
 Usage
 -----
-    # With real UCI data (place Concrete_Data.csv in this directory):
     python discover_symmetry.py --data Concrete_Data.csv
-
-    # With synthetic data (no external files needed):
-    python discover_symmetry.py --synthetic
+    python discover_symmetry.py --data Concrete_Data.xls
+    python discover_symmetry.py --data Concrete_Data.csv --encoder-hidden 64 32
 """
 
 import sys
@@ -89,48 +87,6 @@ VARIABLE_UNITS = [
 # Data loading
 # ──────────────────────────────────────────────────────────────────────────────
 
-def generate_synthetic_data(n_samples: int = 1000, seed: int = 42) -> dict:
-    """
-    Generate synthetic concrete data with realistic ranges and additive physics.
-
-    Strength is governed by a linear combination (translational symmetry):
-        strength = f(a1*cement + a2*slag + a3*fly_ash + a4*water + ...)
-    """
-    rng = np.random.default_rng(seed)
-
-    # Realistic ranges from UCI dataset
-    cement   = rng.uniform(102, 540, n_samples)
-    slag     = rng.uniform(0, 359, n_samples)
-    fly_ash  = rng.uniform(0, 200, n_samples)
-    water    = rng.uniform(122, 247, n_samples)
-    superpl  = rng.uniform(0, 32, n_samples)
-    coarse   = rng.uniform(801, 1145, n_samples)
-    fine     = rng.uniform(594, 993, n_samples)
-    age      = rng.uniform(1, 365, n_samples)
-
-    X = np.column_stack([cement, slag, fly_ash, water, superpl, coarse, fine, age])
-
-    # Known additive relationship (Abrams' law inspired):
-    # Strength depends on water/binder ratio and age
-    # Use a linear combination as the latent variable
-    binder = cement + 0.7 * slag + 0.5 * fly_ash
-    w_b_ratio = water / (binder + 1e-6)
-
-    # Strength = f(linear combination of inputs) + noise
-    # The linear combination: positive for cement/slag/fly_ash/superpl/age,
-    # negative for water (higher water = weaker)
-    z = (0.10 * cement + 0.07 * slag + 0.05 * fly_ash
-         - 0.15 * water + 0.20 * superpl
-         + 0.01 * coarse + 0.01 * fine
-         + 0.08 * np.sqrt(age) * 10)
-
-    # Nonlinear but monotonic mapping from z to strength
-    strength = 5.0 + 0.8 * z + rng.normal(0, 2.0, n_samples)
-    strength = np.clip(strength, 2.0, 82.0)
-
-    return {"X": X, "y": strength}
-
-
 def load_csv_data(csv_path: str) -> dict:
     """Load concrete data from CSV/XLS."""
     ext = os.path.splitext(csv_path)[1].lower()
@@ -165,16 +121,20 @@ def load_csv_data(csv_path: str) -> dict:
 
 
 def load_data(args):
-    """Load or generate data."""
-    if args.synthetic:
-        print("Generating synthetic concrete data...")
-        data = generate_synthetic_data(n_samples=args.n_samples, seed=args.seed)
-    elif args.data and os.path.exists(args.data):
-        print(f"Loading concrete data from {args.data}...")
-        data = load_csv_data(args.data)
-    else:
-        print(f"'{args.data}' not found. Using synthetic data.")
-        data = generate_synthetic_data(n_samples=args.n_samples, seed=args.seed)
+    """Load experimental data from CSV/Excel file."""
+    data_path = args.data
+    if not os.path.exists(data_path):
+        # Try relative to script directory
+        data_path = os.path.join(_here, os.path.basename(args.data))
+    if not os.path.exists(data_path):
+        print(f"ERROR: Data file not found: {args.data}")
+        print(f"Download the UCI Concrete dataset and place it in {_here}/")
+        print(f"  python discover_symmetry.py --data Concrete_Data.csv")
+        print(f"  python discover_symmetry.py --data Concrete_Data.xls")
+        sys.exit(1)
+
+    print(f"Loading concrete data from {data_path}...")
+    data = load_csv_data(data_path)
 
     X, y = data["X"], data["y"]
     print(f"  Samples: {X.shape[0]}, Features: {X.shape[1]}")
@@ -441,8 +401,6 @@ def main():
         description="Discover symmetry in concrete compressive strength data"
     )
     parser.add_argument("--data", default="Concrete_Data.csv")
-    parser.add_argument("--synthetic", action="store_true")
-    parser.add_argument("--n-samples", type=int, default=1000)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--latent-epochs", type=int, default=600)
     parser.add_argument("--sym-epochs", type=int, default=1500)

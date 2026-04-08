@@ -19,11 +19,8 @@ of unit-rescaling transformations under which Ke (and thus e*) is invariant.
 
 Usage
 -----
-    # With real keyhole data:
     python discover_symmetry.py --data dataset_keyhole.csv
-
-    # With synthetic data (no external files needed):
-    python discover_symmetry.py --synthetic
+    python discover_symmetry.py --data dataset_keyhole.csv --encoder-hidden 64 32
 """
 
 import sys
@@ -87,23 +84,6 @@ def compute_ke(X: np.ndarray) -> np.ndarray:
 # Data loading
 # ──────────────────────────────────────────────────────────────────────────────
 
-def generate_synthetic_data(n_samples: int = 500, seed: int = 42) -> dict:
-    """Generate synthetic keyhole welding data with realistic ranges."""
-    rng = np.random.default_rng(seed)
-    etaP  = rng.uniform(40, 200, n_samples)
-    Vs    = rng.uniform(0.1, 1.5, n_samples)
-    r0    = rng.uniform(1e-4, 5e-4, n_samples)
-    alpha = rng.uniform(5e-6, 2e-5, n_samples)
-    rho   = rng.uniform(2500, 8000, n_samples)
-    cp    = rng.uniform(500, 1200, n_samples)
-    Tl_T0 = rng.uniform(1000, 3500, n_samples)
-    X = np.column_stack([etaP, Vs, r0, alpha, rho, cp, Tl_T0])
-    Ke = compute_ke(X)
-    # e* is a known function of Ke with small noise
-    y = 0.8 * Ke**0.6 + rng.normal(0, 0.02 * np.std(0.8 * Ke**0.6), n_samples)
-    return {"X": X, "y": y, "Ke": Ke}
-
-
 def load_csv_data(csv_path: str) -> dict:
     """Load keyhole data from CSV, skipping non-numeric columns."""
     import csv
@@ -140,16 +120,20 @@ def load_csv_data(csv_path: str) -> dict:
 
 
 def load_data(args):
-    """Load or generate data, compute Ke, return (X, y, Ke)."""
-    if args.synthetic:
-        print("Generating synthetic keyhole data...")
-        data = generate_synthetic_data(n_samples=args.n_samples, seed=args.seed)
-    elif args.data and os.path.exists(args.data):
-        print(f"Loading keyhole data from {args.data}...")
-        data = load_csv_data(args.data)
-    else:
-        print(f"'{args.data}' not found. Using synthetic data.")
-        data = generate_synthetic_data(n_samples=args.n_samples, seed=args.seed)
+    """Load data from CSV, compute Ke, return (X, y, Ke)."""
+    data_path = args.data
+    if not os.path.exists(data_path):
+        # Try relative to script directory
+        data_path = os.path.join(_here, os.path.basename(args.data))
+    if not os.path.exists(data_path):
+        print(f"ERROR: Data file not found: {args.data}")
+        print(f"Place your keyhole CSV (with columns {VARIABLE_NAMES} and e*/Ke)")
+        print(f"in {_here}/ and run:")
+        print(f"  python discover_symmetry.py --data <your_file.csv>")
+        sys.exit(1)
+
+    print(f"Loading keyhole data from {data_path}...")
+    data = load_csv_data(data_path)
 
     X, y = data["X"], data["y"]
     Ke = compute_ke(X)
@@ -390,8 +374,6 @@ def plot_results(X, y, results, output_dir):
 def main():
     parser = argparse.ArgumentParser(description="Discover symmetry in keyhole welding data")
     parser.add_argument("--data", default="dataset_keyhole.csv")
-    parser.add_argument("--synthetic", action="store_true")
-    parser.add_argument("--n-samples", type=int, default=500)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--latent-epochs", type=int, default=600)
     parser.add_argument("--sym-epochs", type=int, default=1500)

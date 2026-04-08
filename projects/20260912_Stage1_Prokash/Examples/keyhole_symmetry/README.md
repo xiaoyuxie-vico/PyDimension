@@ -33,26 +33,24 @@ via log-space linear weights.
 
 ## Pipeline
 
-1. **Data loading** — Read keyhole CSV or generate synthetic data
+1. **Data loading** — Read keyhole CSV (experimental data required)
 2. **Normalization** — Standardize features
 3. **Latent dimension** — Autoencoder sweep (expected: k ≈ 2-3)
 4. **Symmetry identification** — Competitive training (expected: scaling)
 5. **Generator extraction** — Null-space of encoder weights = scaling directions
-6. **Visualization** — 6-panel summary figure
+6. **Visualization** — 3-panel summary figure
 
 ## Usage
 
-### Synthetic data (no files needed)
-
 ```bash
 cd projects/20260912_Stage1_Prokash/Examples/keyhole_symmetry
-python discover_symmetry.py --synthetic
-```
+python discover_symmetry.py --data dataset_keyhole.csv
 
-### Real keyhole data
+# With multi-layer encoder for latent dimension discovery:
+python discover_symmetry.py --data dataset_keyhole.csv --encoder-hidden 64 32
 
-```bash
-python discover_symmetry.py --data path/to/dataset_keyhole.csv
+# With Pi group augmentation (uses known Ke exponents):
+python discover_symmetry.py --data dataset_keyhole.csv --encoder-hidden 64 32 --pi-basis
 ```
 
 ## Expected Results

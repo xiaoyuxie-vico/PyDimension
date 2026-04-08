@@ -46,26 +46,21 @@ The example runs the full Stage1 symmetry discovery pipeline:
 
 ## Quick Start
 
-### With synthetic LHC-like data (no external files needed)
-
-```bash
-cd examples/lhc_dijet_symmetry
-python discover_symmetry.py --synthetic
-```
-
-### With real LHC data
-
 1. Download the dataset from https://zenodo.org/record/4536377
    (file: `events_anomalydetection_v2.h5`)
 
 2. Prepare the data:
 ```bash
+cd projects/20260912_Stage1_Prokash/Examples/LHC_dijet_symmetry
 python prepare_data.py --input events_anomalydetection_v2.h5
 ```
 
 3. Run symmetry discovery:
 ```bash
 python discover_symmetry.py --data lhc_dijet_data.pt
+
+# With multi-layer encoder:
+python discover_symmetry.py --data lhc_dijet_data.pt --encoder-hidden 64 32
 ```
 
 ## Output
