@@ -55,7 +55,7 @@ The first parity milestone is now wired end-to-end:
 - the 2.0 benchmark runs through `legacy/run_pipeline_v2.py`
 - the 3.0 translational path runs through `run_pipeline_v3.py`
 - `run_pipeline.py` dispatches between them with `--pipeline-version v2|v3`
-- the key translational benchmark artifacts match between the two paths, with symmetry-discovery JSON differences limited to timestamps and output-path metadata
+- The key translational benchmark artifacts match between the two paths; symmetry-discovery JSON differences are limited to timestamps and output-path metadata.
 
 ## Who Is PyDimension For?
 
@@ -449,6 +449,3 @@ If you have any questions, suggestions, or would like to contribute to or collab
   - Email: xiaoyuxie.vico@gmail.com
 - Zhengtao Gan
   - Email: Zhengtao.Gan@asu.edu
-- Jinghe Zhang
-  - Email: jhzhang.523@gmail.com
-
