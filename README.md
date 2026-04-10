@@ -449,4 +449,6 @@ If you have any questions, suggestions, or would like to contribute to or collab
   - Email: xiaoyuxie.vico@gmail.com
 - Zhengtao Gan
   - Email: Zhengtao.Gan@asu.edu
+- Jinghe Zhang
+  - Email: jhzhang.523@gmail.com
 
