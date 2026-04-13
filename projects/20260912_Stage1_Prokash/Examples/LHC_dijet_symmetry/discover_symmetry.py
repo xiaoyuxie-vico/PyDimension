@@ -33,6 +33,25 @@ Usage
     python prepare_data.py           # download & prepare LHC Olympics data
     python discover_symmetry.py --data lhc_dijet_data.pt
     python discover_symmetry.py --data lhc_dijet_data.pt --encoder-hidden 64 32
+    python discover_symmetry.py --data lhc_dijet_data.pt --use-pi-groups
+    python discover_symmetry.py --data lhc_dijet_data.pt \\
+                                --encoder-hidden 64 32 --use-pi-groups
+
+Notes
+-----
+* ``--encoder-hidden`` replaces the single linear encoder with a multi-layer
+  MLP (Tanh activations) over the augmented feature space
+  ``[X, X², log|X|, π...]``.  A single-layer encoder over the 12-dim
+  augmented space cannot represent the cross term ``p1x·p2x + p1y·p2y``
+  required to fully resolve ``cos(Δφ)``.  High R² for k=1 therefore comes
+  from dijet kinematics being near the 1-D manifold ``pT1 ≈ pT2, Δφ ≈ π``
+  (so ``m_jjᵀ ≈ 2·pT1``), not from the encoder learning the SO(2) symmetry.
+
+* ``--use-pi-groups`` appends six physics-based dimensionless candidates
+  (``cos(Δφ)``, ``pT2/pT1``, ``cos(φ1)``, ``sin(φ1)``, ``cos(φ2)``,
+  ``sin(φ2)``) which *do* contain the rotation-invariant information the
+  augmented basis is missing.  These are the "dimensionless learning
+  candidates" recommended as encoder inputs.
 """
 
 import sys
@@ -107,6 +126,62 @@ def compute_dijet_mass(X: np.ndarray) -> np.ndarray:
     return m_jj_T
 
 
+def compute_dimensionless_candidates(X: np.ndarray) -> tuple:
+    """
+    Build physics-motivated dimensionless candidate features from
+    (p1x, p1y, p2x, p2y).
+
+    Standard Π-group analysis (exponent null-space of the dimension matrix)
+    does not apply here because all four inputs share the same unit [GeV]
+    *and* can be negative — ``log|x|`` loses sign and makes power-law
+    combinations ill-defined.  Instead we hand over physically meaningful
+    dimensionless quantities that the encoder can pick up directly:
+
+        Π_1 = cos(Δφ) = (p1·p2) / (pT1·pT2)     — rotation invariant
+        Π_2 = pT2 / pT1                          — momentum-balance ratio
+        Π_3 = p1x / pT1                          — cos(φ1)
+        Π_4 = p1y / pT1                          — sin(φ1)
+        Π_5 = p2x / pT2                          — cos(φ2)
+        Π_6 = p2y / pT2                          — sin(φ2)
+
+    Π_1 is invariant under simultaneous azimuthal rotation of both jets
+    (the SO(2) symmetry we try to discover) and captures the one piece of
+    information missing from the [X, X², log|X|] augmented feature space:
+    the cross term  p1x·p2x + p1y·p2y.  With only [X, X², log|X|] the
+    encoder cannot represent the dot product of two different raw inputs,
+    which is why a linear single-layer encoder silently falls back to
+    learning m_jjᵀ ≈ 2·pT1 (valid only because LHC dijets are nearly
+    back-to-back with pT1 ≈ pT2).
+
+    Returns
+    -------
+    pi_features : (n_samples, 6) array of dimensionless candidates
+    names       : list of str  — human-readable names for each column
+    """
+    p1x, p1y, p2x, p2y = X[:, 0], X[:, 1], X[:, 2], X[:, 3]
+
+    pT1 = np.sqrt(p1x ** 2 + p1y ** 2) + 1e-12
+    pT2 = np.sqrt(p2x ** 2 + p2y ** 2) + 1e-12
+
+    cos_dphi = (p1x * p2x + p1y * p2y) / (pT1 * pT2)
+    cos_dphi = np.clip(cos_dphi, -1.0, 1.0)
+    pT_ratio = pT2 / pT1
+
+    cos_phi1 = p1x / pT1
+    sin_phi1 = p1y / pT1
+    cos_phi2 = p2x / pT2
+    sin_phi2 = p2y / pT2
+
+    pi = np.stack(
+        [cos_dphi, pT_ratio, cos_phi1, sin_phi1, cos_phi2, sin_phi2], axis=1
+    )
+    names = [
+        "cos(dphi)", "pT2/pT1",
+        "cos(phi1)", "sin(phi1)", "cos(phi2)", "sin(phi2)",
+    ]
+    return pi.astype(np.float32), names
+
+
 def load_data(args) -> tuple:
     """Load prepared LHC data, return (X, y) as numpy arrays."""
     if args.data and os.path.exists(args.data):
@@ -163,6 +238,17 @@ def run_pipeline(X: np.ndarray, y: np.ndarray, args) -> dict:
     enc_kwargs = {}
     if getattr(args, "encoder_hidden", None):
         enc_kwargs["encoder_hidden_dims"] = args.encoder_hidden
+        print(f"  Multi-layer encoder enabled: hidden dims = {args.encoder_hidden}")
+
+    # Physics-based dimensionless candidates (computed from raw X, not X_norm)
+    if getattr(args, "use_pi_groups", False):
+        pi_features, pi_names = compute_dimensionless_candidates(X)
+        print(f"  Dimensionless candidates appended: {pi_names}")
+        print(f"    pi_features shape: {pi_features.shape}  "
+              f"(range cos(dphi): [{pi_features[:, 0].min():.3f}, "
+              f"{pi_features[:, 0].max():.3f}])")
+        enc_kwargs["pi_features"] = pi_features
+        results["pi_names"] = pi_names
 
     res_latent = discover_latent_dimension(
         X_norm, y_norm,
@@ -450,6 +536,10 @@ def main():
                         help="Directory for output figures and summary")
     parser.add_argument("--encoder-hidden", type=int, nargs="+", default=None,
                         help="Hidden layer widths for multi-layer encoder (e.g. --encoder-hidden 64 32)")
+    parser.add_argument("--use-pi-groups", action="store_true",
+                        help="Append physics-based dimensionless candidates "
+                             "(cos(dphi), pT2/pT1, cos/sin of phi1, phi2) "
+                             "as extra encoder inputs in Step 2.")
     args = parser.parse_args()
 
     # Load data

@@ -118,6 +118,7 @@ def discover_latent_dimension(
     device: str = "auto",
     encoder_hidden_dims: Optional[List[int]] = None,
     pi_basis_vectors: Optional[np.ndarray] = None,
+    pi_features: Optional[np.ndarray] = None,
 ) -> dict:
     """
     Sweep n_latent from 1 to max_latent, train an autoencoder for each,
@@ -149,6 +150,13 @@ def discover_latent_dimension(
         Null-space basis of the dimension matrix.  When provided,
         dimensionless Pi groups are computed from X and appended as
         extra encoder inputs: [X, X², log|X|, π₁...πₘ].
+    pi_features : (n_samples, n_groups) array, optional
+        Pre-computed dimensionless candidate features (e.g. cos(Δφ),
+        pT ratios, angles...) to be appended directly as extra encoder
+        inputs without the [X, X², log|X|] augmentation.  Mutually
+        exclusive with ``pi_basis_vectors``.  Use this when the physical
+        dimensionless candidates cannot be expressed as power-law
+        products of the raw inputs (e.g. signed momentum components).
 
     Returns
     -------
@@ -169,13 +177,29 @@ def discover_latent_dimension(
 
     n_samples, n_inputs = X.shape
 
-    # --- Compute Pi groups if basis vectors are provided ---
+    # --- Compute Pi groups if basis vectors / precomputed features are given ---
+    if pi_basis_vectors is not None and pi_features is not None:
+        raise ValueError(
+            "Pass either pi_basis_vectors or pi_features, not both."
+        )
+
     n_pi_groups = 0
     if pi_basis_vectors is not None:
         pi_groups = _compute_pi_groups(X, pi_basis_vectors)
         n_pi_groups = pi_groups.shape[1]
         X_aug_np = np.hstack([X, pi_groups])  # (n_samples, n_inputs + n_pi)
-        print(f"  Pi group augmentation: {n_pi_groups} groups appended "
+        print(f"  Pi group augmentation (basis vectors): {n_pi_groups} groups "
+              f"→ encoder input dim = 3×{n_inputs} + {n_pi_groups} = "
+              f"{3 * n_inputs + n_pi_groups}")
+    elif pi_features is not None:
+        if pi_features.shape[0] != n_samples:
+            raise ValueError(
+                f"pi_features has {pi_features.shape[0]} rows, "
+                f"expected {n_samples} to match X"
+            )
+        n_pi_groups = pi_features.shape[1]
+        X_aug_np = np.hstack([X, pi_features.astype(X.dtype)])
+        print(f"  Pi group augmentation (precomputed): {n_pi_groups} features "
               f"→ encoder input dim = 3×{n_inputs} + {n_pi_groups} = "
               f"{3 * n_inputs + n_pi_groups}")
     else:
