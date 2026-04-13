@@ -276,6 +276,8 @@ def discover_latent_dimension(
         "optimal_n_latent": optimal_k,
         "best_encoder": best_model.encoder,
         "best_decoder": best_model.decoder,
+        "encoders_per_k": {k: m.encoder for k, m in models.items()},
+        "models_per_k": models,
         "metrics": metrics,
         "device": str(_device),
     }

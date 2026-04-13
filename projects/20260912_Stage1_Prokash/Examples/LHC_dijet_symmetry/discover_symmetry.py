@@ -182,6 +182,138 @@ def compute_dimensionless_candidates(X: np.ndarray) -> tuple:
     return pi.astype(np.float32), names
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Weight extraction for the single-layer (linear) encoder
+# ──────────────────────────────────────────────────────────────────────────────
+
+RAW_INPUT_NAMES = ["p1x", "p1y", "p2x", "p2y"]
+
+
+def extract_linear_encoder_weights(
+    encoder_wrapper,
+    n_inputs: int = 4,
+    input_names=None,
+    pi_names=None,
+):
+    """
+    Pull the (n_latent × n_aug) weight matrix out of a single-layer linear
+    encoder and split it by feature group.
+
+    The augmented feature layout inside the encoder is:
+        [ x_1..x_n  |  x_1²..x_n²  |  log|x_1|..log|x_n|  |  π_1..π_m ]
+         (linear)     (quadratic)    (log)                  (dimensionless)
+
+    Returns None if the encoder is a multi-layer MLP (weight inspection is
+    only physically meaningful for the linear case).
+    """
+    import torch.nn as nn
+
+    enc = encoder_wrapper._enc
+    if not isinstance(enc, nn.Linear):
+        return None
+
+    W = enc.weight.detach().cpu().numpy()  # (n_latent, n_aug)
+    b = enc.bias.detach().cpu().numpy()    # (n_latent,)
+    n_latent, n_aug = W.shape
+    n_pi = n_aug - 3 * n_inputs
+
+    if input_names is None:
+        input_names = [f"x{i}" for i in range(n_inputs)]
+
+    return {
+        "W": W,
+        "b": b,
+        "n_latent": n_latent,
+        "n_aug": n_aug,
+        "n_pi_groups": n_pi,
+        "linear": W[:, :n_inputs],                    # coefficients on x
+        "quadratic": W[:, n_inputs:2 * n_inputs],     # coefficients on x²
+        "log": W[:, 2 * n_inputs:3 * n_inputs],       # coefficients on log|x|
+        "pi": W[:, 3 * n_inputs:] if n_pi > 0 else None,
+        "input_names": list(input_names),
+        "pi_names": list(pi_names) if pi_names else None,
+    }
+
+
+def print_linear_encoder_weights(weights: dict) -> None:
+    """Pretty-print the decomposed weight matrix."""
+    if weights is None:
+        print("  Encoder is multi-layer — linear weight extraction skipped.")
+        return
+
+    n_latent = weights["n_latent"]
+    names    = weights["input_names"]
+    pi_names = weights["pi_names"]
+
+    print(f"  Linear encoder W shape: {weights['W'].shape}  "
+          f"(n_latent × n_aug)")
+    print(f"  Bias: {np.round(weights['b'], 4).tolist()}")
+    print()
+
+    for k in range(n_latent):
+        print(f"  Latent dim z_{k + 1}:")
+        header = f"    {'input':<10s} {'linear x':>12s} {'quad x²':>12s} {'log|x|':>12s}"
+        print(header)
+        print("    " + "-" * (len(header) - 4))
+        for i, name in enumerate(names):
+            print(f"    {name:<10s} "
+                  f"{weights['linear'][k, i]:>+12.4f} "
+                  f"{weights['quadratic'][k, i]:>+12.4f} "
+                  f"{weights['log'][k, i]:>+12.4f}")
+
+        if weights["pi"] is not None and weights["pi"].shape[1] > 0:
+            print(f"    {'Π feature':<14s} {'weight':>12s}")
+            print("    " + "-" * 26)
+            for j, pname in enumerate(pi_names or []):
+                print(f"    {pname:<14s} {weights['pi'][k, j]:>+12.4f}")
+
+        print(f"    bias: {weights['b'][k]:+.4f}")
+
+        # Highlight the top-3 contributors (by |weight|) to give a quick
+        # reading of what this latent dim is picking up on.
+        all_contribs = []
+        for i, name in enumerate(names):
+            all_contribs.append((f"{name} (lin)",  weights["linear"][k, i]))
+            all_contribs.append((f"{name}² (quad)", weights["quadratic"][k, i]))
+            all_contribs.append((f"log|{name}|",   weights["log"][k, i]))
+        if weights["pi"] is not None and pi_names is not None:
+            for j, pname in enumerate(pi_names):
+                all_contribs.append((pname, weights["pi"][k, j]))
+        all_contribs.sort(key=lambda t: abs(t[1]), reverse=True)
+        top = all_contribs[:3]
+        top_str = ", ".join(f"{name}: {val:+.3f}" for name, val in top)
+        print(f"    top-3 contributors: {top_str}")
+        print()
+
+
+def save_linear_encoder_weights(
+    all_weights: dict, output_dir: str, filename: str = "encoder_weights.npz"
+) -> None:
+    """Save per-k linear encoder weights to an .npz file for later inspection."""
+    os.makedirs(output_dir, exist_ok=True)
+    payload = {}
+    for k, w in all_weights.items():
+        if w is None:
+            continue
+        payload[f"k{k}_W"]         = w["W"]
+        payload[f"k{k}_b"]         = w["b"]
+        payload[f"k{k}_linear"]    = w["linear"]
+        payload[f"k{k}_quadratic"] = w["quadratic"]
+        payload[f"k{k}_log"]       = w["log"]
+        if w["pi"] is not None:
+            payload[f"k{k}_pi"] = w["pi"]
+    if not payload:
+        return
+    # Store names as one string array — np.savez handles it fine
+    any_w = next(w for w in all_weights.values() if w is not None)
+    payload["input_names"] = np.array(any_w["input_names"])
+    if any_w["pi_names"]:
+        payload["pi_names"] = np.array(any_w["pi_names"])
+    path = os.path.join(output_dir, filename)
+    np.savez(path, **payload)
+    print(f"  Encoder weights saved to {path}")
+
+
 def load_data(args) -> tuple:
     """Load prepared LHC data, return (X, y) as numpy arrays."""
     if args.data and os.path.exists(args.data):
@@ -265,6 +397,35 @@ def run_pipeline(X: np.ndarray, y: np.ndarray, args) -> dict:
         r2_tr = m.get('R2_train', float('nan'))
         print(f"    k={k}: R2_train={r2_tr:.4f}, R2_test={m['R2']:.4f}, MSE={m['MSE']:.6f}")
     print()
+
+    # --- Extract linear encoder weights (only if single-layer) ---
+    pi_names = results.get("pi_names")
+    all_weights = {}
+    is_linear = not getattr(args, "encoder_hidden", None)
+    if is_linear and "encoders_per_k" in res_latent:
+        print("=" * 60)
+        print("Step 2b: Linear encoder weight decomposition")
+        print("=" * 60)
+        print("  Augmented feature layout:")
+        print("    [ x | x² | log|x| | Π features ]")
+        print()
+        for k, enc_wrap in sorted(res_latent["encoders_per_k"].items()):
+            print(f"--- k = {k} ---")
+            w = extract_linear_encoder_weights(
+                enc_wrap,
+                n_inputs=X.shape[1],
+                input_names=RAW_INPUT_NAMES,
+                pi_names=pi_names,
+            )
+            all_weights[k] = w
+            print_linear_encoder_weights(w)
+        results["encoder_weights"] = all_weights
+        save_linear_encoder_weights(all_weights, args.output_dir)
+        print()
+    elif not is_linear:
+        print("  (Encoder is multi-layer — skipping linear weight extraction.")
+        print("   Use the default single-layer encoder to inspect per-feature weights.)")
+        print()
 
     # --- Identify symmetry type ---
     print("=" * 60)
