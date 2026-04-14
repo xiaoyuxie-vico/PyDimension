@@ -32,26 +32,32 @@ Usage
 -----
     python prepare_data.py           # download & prepare LHC Olympics data
     python discover_symmetry.py --data lhc_dijet_data.pt
-    python discover_symmetry.py --data lhc_dijet_data.pt --encoder-hidden 64 32
-    python discover_symmetry.py --data lhc_dijet_data.pt --use-pi-groups
-    python discover_symmetry.py --data lhc_dijet_data.pt \\
-                                --encoder-hidden 64 32 --use-pi-groups
+    python discover_symmetry.py --data lhc_dijet_data.pt --encoder-hidden 128 64 32
+
+Current pipeline configuration (per supervisor's instructions)
+--------------------------------------------------------------
+Step 2 — Discover latent dimension:
+    * Encoder: multi-layer MLP (default [64, 32]) with Tanh activations.
+    * Input:   raw X (p1x, p1y, p2x, p2y) — NO [X, X², log|X|] augmentation.
+    * Pi groups / dimensionless candidates: DISABLED.
+    * Goal: find the smallest latent dimension k* that reproduces y well.
+
+Step 3 — Identify symmetry type:
+    * Encoder: single linear layer per symmetry type (translational,
+      rotational, scaling), bias = False, with n_latent = k* from Step 2.
+    * Decoder: freshly initialised every restart — NO warm-start from
+      Step 2's trained decoder.  Encoder and decoder are trained jointly.
+    * The winning symmetry type is the one whose feature transform gives
+      the lowest validation MSE.
 
 Notes
 -----
-* ``--encoder-hidden`` replaces the single linear encoder with a multi-layer
-  MLP (Tanh activations) over the augmented feature space
-  ``[X, X², log|X|, π...]``.  A single-layer encoder over the 12-dim
-  augmented space cannot represent the cross term ``p1x·p2x + p1y·p2y``
-  required to fully resolve ``cos(Δφ)``.  High R² for k=1 therefore comes
-  from dijet kinematics being near the 1-D manifold ``pT1 ≈ pT2, Δφ ≈ π``
-  (so ``m_jjᵀ ≈ 2·pT1``), not from the encoder learning the SO(2) symmetry.
+* ``--encoder-hidden`` overrides the default MLP hidden sizes.  The MLP
+  is applied directly to the 4-dim raw momentum vector — no quadratic /
+  log augmentation is prepended.
 
-* ``--use-pi-groups`` appends six physics-based dimensionless candidates
-  (``cos(Δφ)``, ``pT2/pT1``, ``cos(φ1)``, ``sin(φ1)``, ``cos(φ2)``,
-  ``sin(φ2)``) which *do* contain the rotation-invariant information the
-  augmented basis is missing.  These are the "dimensionless learning
-  candidates" recommended as encoder inputs.
+* The ``--use-pi-groups`` flag is still accepted but currently ignored;
+  the dimensionless-candidate injection has been turned off by request.
 """
 
 import sys
@@ -367,20 +373,23 @@ def run_pipeline(X: np.ndarray, y: np.ndarray, args) -> dict:
     print("Step 2: Discovering intrinsic latent dimension")
     print("=" * 60)
     sys.stdout.flush()
-    enc_kwargs = {}
-    if getattr(args, "encoder_hidden", None):
-        enc_kwargs["encoder_hidden_dims"] = args.encoder_hidden
-        print(f"  Multi-layer encoder enabled: hidden dims = {args.encoder_hidden}")
 
-    # Physics-based dimensionless candidates (computed from raw X, not X_norm)
+    # Multi-layer MLP encoder on raw X, no augmentation, no Pi features.
+    # Rationale: let the MLP discover the right nonlinear combinations on
+    # its own instead of handing it [X, X², log|X|].  Per current
+    # instructions the dimensionless-candidate injection is disabled.
+    encoder_hidden_dims = getattr(args, "encoder_hidden", None) or [64, 32]
+    enc_kwargs = {
+        "encoder_hidden_dims": encoder_hidden_dims,
+        "raw_input":           True,
+    }
+    print(f"  Encoder: multi-layer MLP on RAW X (no [X, X², log|X|] augment)")
+    print(f"           hidden dims = {encoder_hidden_dims}")
+    print(f"           Pi features = DISABLED")
+
     if getattr(args, "use_pi_groups", False):
-        pi_features, pi_names = compute_dimensionless_candidates(X)
-        print(f"  Dimensionless candidates appended: {pi_names}")
-        print(f"    pi_features shape: {pi_features.shape}  "
-              f"(range cos(dphi): [{pi_features[:, 0].min():.3f}, "
-              f"{pi_features[:, 0].max():.3f}])")
-        enc_kwargs["pi_features"] = pi_features
-        results["pi_names"] = pi_names
+        print("  NOTE: --use-pi-groups flag is being ignored under the current")
+        print("        single-layer / multi-layer split (Pi features off by request)")
 
     res_latent = discover_latent_dimension(
         X_norm, y_norm,
@@ -392,49 +401,27 @@ def run_pipeline(X: np.ndarray, y: np.ndarray, args) -> dict:
     )
     n_latent = res_latent["optimal_n_latent"]
     results["latent"] = res_latent
+    print(f"  [device used: {res_latent.get('device', 'unknown')}]")
     print(f"\n  Optimal latent dimension: {n_latent}")
     for k, m in res_latent["metrics"].items():
         r2_tr = m.get('R2_train', float('nan'))
         print(f"    k={k}: R2_train={r2_tr:.4f}, R2_test={m['R2']:.4f}, MSE={m['MSE']:.6f}")
     print()
 
-    # --- Extract linear encoder weights (only if single-layer) ---
-    pi_names = results.get("pi_names")
-    all_weights = {}
-    is_linear = not getattr(args, "encoder_hidden", None)
-    if is_linear and "encoders_per_k" in res_latent:
-        print("=" * 60)
-        print("Step 2b: Linear encoder weight decomposition")
-        print("=" * 60)
-        print("  Augmented feature layout:")
-        print("    [ x | x² | log|x| | Π features ]")
-        print()
-        for k, enc_wrap in sorted(res_latent["encoders_per_k"].items()):
-            print(f"--- k = {k} ---")
-            w = extract_linear_encoder_weights(
-                enc_wrap,
-                n_inputs=X.shape[1],
-                input_names=RAW_INPUT_NAMES,
-                pi_names=pi_names,
-            )
-            all_weights[k] = w
-            print_linear_encoder_weights(w)
-        results["encoder_weights"] = all_weights
-        save_linear_encoder_weights(all_weights, args.output_dir)
-        print()
-    elif not is_linear:
-        print("  (Encoder is multi-layer — skipping linear weight extraction.")
-        print("   Use the default single-layer encoder to inspect per-feature weights.)")
-        print()
+    # --- (Linear-encoder weight decomposition skipped: encoder is MLP) ---
 
     # --- Identify symmetry type ---
+    # Step 3 uses a single-layer linear SymmetryEncoder (bias=False) per
+    # symmetry type, each trained jointly with a fresh decoder — NO warm
+    # start from Step 2's decoder.  The decoder argument is deliberately
+    # omitted here; identify_symmetry ignores it in any case.
     print("=" * 60)
     print("Step 3: Identifying symmetry type")
+    print("      (single linear encoder, no bias, fresh decoder each restart)")
     print("=" * 60)
     res_sym = identify_symmetry(
         X_norm, y_norm,
         n_latent=n_latent,
-        decoder=res_latent["best_decoder"],
         n_epochs=args.sym_epochs,
         n_restarts=args.n_restarts,
         seed=args.seed,

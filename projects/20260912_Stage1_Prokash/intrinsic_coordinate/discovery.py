@@ -119,6 +119,7 @@ def discover_latent_dimension(
     encoder_hidden_dims: Optional[List[int]] = None,
     pi_basis_vectors: Optional[np.ndarray] = None,
     pi_features: Optional[np.ndarray] = None,
+    raw_input: bool = False,
 ) -> dict:
     """
     Sweep n_latent from 1 to max_latent, train an autoencoder for each,
@@ -157,6 +158,12 @@ def discover_latent_dimension(
         exclusive with ``pi_basis_vectors``.  Use this when the physical
         dimensionless candidates cannot be expressed as power-law
         products of the raw inputs (e.g. signed momentum components).
+    raw_input : bool
+        If True, the autoencoder bypasses the [X, X², log|X|] augmentation
+        and consumes the raw input (optionally with pi features) directly.
+        Must be paired with a multi-layer ``encoder_hidden_dims`` — a
+        single linear layer on raw 4-dim momentum gives you only 4
+        parameters per latent dim, which is too small to be useful.
 
     Returns
     -------
@@ -216,6 +223,13 @@ def discover_latent_dimension(
 
     if encoder_hidden_dims is not None:
         print(f"  Multi-layer encoder: {encoder_hidden_dims}")
+    if raw_input:
+        if encoder_hidden_dims is None:
+            print("  WARNING: raw_input=True with a single linear encoder gives")
+            print("           only n_inputs weights per latent dim — consider")
+            print("           passing encoder_hidden_dims=[...] for expressivity.")
+        else:
+            print("  raw_input=True: [X, X², log|X|] augmentation is disabled")
 
     metrics = {}
     models  = {}
@@ -233,6 +247,7 @@ def discover_latent_dimension(
                 n_inputs, k, hidden_dim,
                 encoder_hidden_dims=encoder_hidden_dims,
                 n_pi_groups=n_pi_groups,
+                raw_input=raw_input,
             ).to(_device)
             _train_autoencoder(model, X_tr, y_tr, n_epochs, batch_size, lr, _device)
 

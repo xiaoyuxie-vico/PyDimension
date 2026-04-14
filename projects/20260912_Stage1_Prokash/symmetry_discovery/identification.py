@@ -14,6 +14,8 @@ unbiased starting point for every type:
   - Encoder weights converge to the true physical coefficients.
 """
 
+from typing import Optional
+
 import numpy as np
 import torch
 import torch.multiprocessing
@@ -118,7 +120,7 @@ def identify_symmetry(
     X: np.ndarray,
     y: np.ndarray,
     n_latent: int,
-    decoder: nn.Module,
+    decoder: Optional[nn.Module] = None,
     n_epochs: int = 1500,
     batch_size: int = 256,
     lr: float = 1e-3,
@@ -132,18 +134,22 @@ def identify_symmetry(
     """
     Identify the symmetry type of the data by competitive encoder-decoder training.
 
-    For each symmetry type a SymmetryEncoder is trained jointly with a fresh
-    randomly-initialised decoder.  The type whose (encoder, decoder) pair
-    achieves the lowest validation MSE wins.
+    For each symmetry type a SymmetryEncoder (single linear layer, no bias)
+    is trained jointly with a freshly initialised decoder.  Each restart
+    starts from a new random decoder — nothing from Step 2 is frozen or
+    warm-started.  The type whose (encoder, decoder) pair achieves the
+    lowest validation MSE wins.
 
     Parameters
     ----------
     X : (n_samples, n_inputs)
     y : (n_samples,)
     n_latent : int
-        Latent dimension from Task 3.
-    decoder : nn.Module
-        Unused (kept for API compatibility). Each restart uses a fresh decoder.
+        Latent dimension discovered in Step 2.
+    decoder : nn.Module, optional
+        Deprecated / ignored.  Kept only for backwards compatibility with
+        call sites that still pass Step-2's trained decoder.  Each restart
+        always uses a fresh decoder — there is NO warm-start.
     n_epochs : int
         Training epochs per encoder / restart.
     batch_size : int
