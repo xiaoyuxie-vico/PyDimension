@@ -552,6 +552,30 @@ def plot_results(X, y, results, output_dir):
                     zorder=4,
                 )
 
+        # ---- Restricted encoder orbit in the (d0, d1) plane -------
+        # The null-space generator g lives in 6D (for n_latent=1), and its
+        # projection g[d1]/g[d0] onto the 2-variable plane includes
+        # contributions from the other 5 variables.  The "restricted" slope
+        # -W[d0]/W[d1] from the encoder weight vector W answers a cleaner
+        # question: "if ONLY X[d0] and X[d1] change (other variables
+        # fixed), what slope preserves the learned invariant?"  If the
+        # encoder learned Pi exactly, this equals the known-Pi slope.
+        W = results["winner_encoder"].weight_matrix  # (n_latent, n_inputs)
+        w = W[0] if W.ndim == 2 else W
+        if abs(w[d1]) > 1e-12:
+            restricted_slope = -w[d0] / w[d1]
+            # Draw one representative restricted-orbit line through the
+            # data centroid so the user can compare all three.
+            cx = float(logX0.mean())
+            cy = float(logX1.mean())
+            y_restr = cy + restricted_slope * (x_line - cx)
+            ax.plot(x_line, y_restr,
+                    color="black", ls="-.", lw=2.0, alpha=0.75,
+                    label=f"encoder restricted (slope {restricted_slope:+.2f})",
+                    zorder=2)
+        else:
+            restricted_slope = float("nan")
+
         ax.set_ylim(y_lo - y_pad, y_hi + y_pad)
         ax.set_xlim(x_lo - x_pad, x_hi + x_pad)
 
