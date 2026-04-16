@@ -6,9 +6,7 @@ pipeline.
 
 ## Motivation
 
-The companion notebook
-[`../4_plot_3d-ZGAN(1).ipynb`](../4_plot_3d-ZGAN(1).ipynb)
-takes experimental porosity measurements for five alloys (Al2024,
+It takes experimental porosity measurements for five alloys (Al2024,
 Al6061, Cu, SS304, Ti64) processed at many (P, V) combinations and
 collapses the "porosity landscape" onto a single logistic curve in a
 hand-picked dimensionless variable:
