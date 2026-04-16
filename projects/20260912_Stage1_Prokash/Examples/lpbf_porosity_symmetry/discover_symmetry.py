@@ -222,7 +222,22 @@ def run_pipeline(X, y, Pi, args):
     if getattr(args, "encoder_hidden", None):
         enc_kwargs["encoder_hidden_dims"] = args.encoder_hidden
     if getattr(args, "pi_basis", False):
-        enc_kwargs["pi_basis_vectors"] = KNOWN_PI_EXPONENTS.reshape(-1, 1)
+        # NB: we cannot use ``pi_basis_vectors`` here because the library
+        # applies it to the *normalised* X, which has exact zeros after
+        # min-max scaling (LPBF material-property columns only take 5
+        # discrete values, so entire material groups map to 0).  Taking
+        # log(0) and raising to negative exponents would blow up to NaN.
+        #
+        # Instead: compute the Pi feature from the *raw* positive X, take
+        # log10, min-max-scale it to [0, 1] so it lives on the same scale
+        # as the other encoder inputs, and inject it through the
+        # ``pi_features`` argument (which just concatenates it untouched).
+        pi_raw = compute_pi(X)  # uses raw physical X — always > 0
+        log_pi = np.log10(np.maximum(pi_raw, 1e-30))
+        log_pi_n = (log_pi - log_pi.min()) / (log_pi.max() - log_pi.min() + 1e-12)
+        enc_kwargs["pi_features"] = log_pi_n.reshape(-1, 1)
+        print(f"  Injecting precomputed log10(Pi) feature "
+              f"(raw Pi range: {pi_raw.min():.3g} .. {pi_raw.max():.3g})")
 
     res_latent = discover_latent_dimension(
         X_norm, y_norm, max_latent=4,
