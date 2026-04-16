@@ -200,14 +200,34 @@ def load_data(args):
 
 def run_pipeline(X, y, Pi, args):
     """Run Stage1 symmetry discovery on the LPBF physical variables."""
-    results = {"Pi": Pi}
+    results = {"Pi": Pi, "X_raw": X}
 
     # --- Normalize ---
     print("=" * 60)
     print("Step 1: Normalizing data")
     print("=" * 60)
     sys.stdout.flush()
-    norm = normalize_data(X, y, method="minmax")
+
+    if getattr(args, "log_normalize", False):
+        # Geometric-mean centring so the scaling encoder (which applies
+        # log(X.clamp(0.1)) internally) sees centred log-physical coordinates
+        # instead of min-max-clipped affine ones.  After dividing each column
+        # by its geometric mean the column is positive and centred around 1,
+        # so log(X_prescaled) = ln(10)·(log10(X_raw) − mean log10(X)).  A
+        # scaling action in this space is a genuine physical scaling and the
+        # learned weights map 1:1 onto power-law exponents of the raw variables.
+        log10_X = np.log10(np.maximum(X, 1e-30))
+        gmean_exp = log10_X.mean(axis=0)                    # mean in log10 space
+        X_prescaled = 10 ** (log10_X - gmean_exp)           # = X / geomean(X)
+        norm = normalize_data(X_prescaled, y, method="minmax")
+        norm["log_prescaled"] = True
+        norm["gmean_exp"] = gmean_exp
+        print(f"  Log-prenormalisation enabled (geometric-mean centring)")
+        print(f"  X_prescaled range: [{X_prescaled.min():.3g}, {X_prescaled.max():.3g}]")
+    else:
+        norm = normalize_data(X, y, method="minmax")
+        norm["log_prescaled"] = False
+
     X_norm, y_norm = norm["X_normalized"], norm["y_normalized"]
     results["normalization"] = norm
     print(f"  X range: [{X_norm.min():.3f}, {X_norm.max():.3f}]")
@@ -448,16 +468,45 @@ def plot_results(X, y, results, output_dir):
         logX0 = np.log10(np.maximum(X[:, d0], 1e-30))
         logX1 = np.log10(np.maximum(X[:, d1], 1e-30))
         sc = ax.scatter(logX0, logX1, c=y, cmap="plasma",
-                        s=18, alpha=0.75, edgecolors="none")
+                        s=22, alpha=0.9, edgecolors="black", linewidth=0.3)
         fig.colorbar(sc, ax=ax, label="Pore fraction", fraction=0.046, pad=0.04)
 
-        # Slope in (log10 X[d0], log10 X[d1]) space from the generator:
-        # log(X_new) = log(X) + ε · g, so in log10 space the direction is g/ln(10).
-        # The line slope only needs the ratio g[d1] / g[d0].
         x_lo, x_hi = logX0.min(), logX0.max()
+        y_lo, y_hi = logX1.min(), logX1.max()
         x_pad = 0.1 * (x_hi - x_lo + 1e-9)
+        y_pad = 0.15 * (y_hi - y_lo + 1e-9)
         x_line = np.linspace(x_lo - x_pad, x_hi + x_pad, 2)
 
+        # ---- Reference: iso-Pi contours from the KNOWN formula ----------
+        # Pi exponents for (P, V, A, rho, k, Lv, dT) = [+1,+1,+1,+1,-2,+1,-2].
+        # Holding all variables except (d0, d1) at their column-wise
+        # geometric means, log10(Pi) = c + e[d0]*log10(X[d0]) + e[d1]*log10(X[d1]).
+        # Iso-Pi contour → log10(X[d1]) = (log10(Pi) - c - e[d0]*log10(X[d0])) / e[d1].
+        pi_exp = KNOWN_PI_EXPONENTS  # (7,)
+        if abs(pi_exp[d1]) > 1e-12:
+            # Pick Pi levels uniformly spanning the data's log(Pi) range so
+            # the reference lines actually cross the scatter.
+            log10_Pi = np.log10(np.maximum(results["Pi"], 1e-30))
+            levels = np.linspace(log10_Pi.min(), log10_Pi.max(), 6)
+            # Contribution of the "other" variables, at their geom-mean value:
+            log10_X_all = np.log10(np.maximum(X, 1e-30))
+            gmean_log = log10_X_all.mean(axis=0)
+            other_mask = np.ones(len(pi_exp), dtype=bool)
+            other_mask[d0] = other_mask[d1] = False
+            const = float(np.dot(pi_exp[other_mask], gmean_log[other_mask]))
+            ref_slope = -pi_exp[d0] / pi_exp[d1]
+            first = True
+            for lev in levels:
+                y_ref = (lev - const - pi_exp[d0] * x_line) / pi_exp[d1]
+                ax.plot(x_line, y_ref,
+                        color="grey", ls="--", lw=1.0, alpha=0.55,
+                        label="known-Pi iso-contour" if first else None,
+                        zorder=1)
+                first = False
+        else:
+            ref_slope = float("nan")
+
+        # ---- Discovered iso-invariant lines from the scaling generator --
         orbit_colors = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3"]
         rng = np.random.default_rng(42)
         # Pick starting points spread across the data, avoiding duplicates in
@@ -468,29 +517,47 @@ def plot_results(X, y, results, output_dir):
 
         if abs(g[d0]) < 1e-12:
             # Vertical iso-line: constant log(X[d0])
+            slope = float("inf")
             for k, idx in enumerate(start_indices):
                 ax.axvline(logX0[idx],
                            color=orbit_colors[k % len(orbit_colors)],
-                           lw=2, alpha=0.85,
-                           label=f"orbit {k+1}" if k < 3 else None)
+                           lw=2.2, alpha=0.9,
+                           label=f"discovered orbit {k+1}" if k < 3 else None,
+                           zorder=3)
         else:
             slope = g[d1] / g[d0]
             for k, idx in enumerate(start_indices):
                 y_line = logX1[idx] + slope * (x_line - logX0[idx])
                 ax.plot(x_line, y_line,
                         color=orbit_colors[k % len(orbit_colors)],
-                        lw=2, alpha=0.85,
-                        label=f"orbit {k+1}" if k < 3 else None)
-            # Clip y-axis to the data range + a small pad so the lines don't
-            # wander off and hide the scatter.
-            y_lo, y_hi = logX1.min(), logX1.max()
-            y_pad = 0.15 * (y_hi - y_lo + 1e-9)
-            ax.set_ylim(y_lo - y_pad, y_hi + y_pad)
-            ax.set_xlim(x_lo - x_pad, x_hi + x_pad)
+                        lw=2.2, alpha=0.95,
+                        label=f"discovered orbit {k+1}" if k < 3 else None,
+                        zorder=3)
+                # Direction arrow in the middle of the orbit
+                mid_x = logX0[idx]
+                mid_y = logX1[idx]
+                # unit tangent (in plot units), scaled to ~10% of x-range
+                tvec = np.array([1.0, slope])
+                tvec /= np.linalg.norm(tvec) + 1e-12
+                arr_len = 0.15 * (x_hi - x_lo + 1e-9)
+                ax.annotate(
+                    "",
+                    xy=(mid_x + arr_len * tvec[0], mid_y + arr_len * tvec[1]),
+                    xytext=(mid_x, mid_y),
+                    arrowprops=dict(
+                        arrowstyle="->",
+                        color=orbit_colors[k % len(orbit_colors)],
+                        lw=2.0, shrinkA=0, shrinkB=0,
+                    ),
+                    zorder=4,
+                )
 
-        # Annotate the generator direction in the panel title
-        slope_str = (f"slope = {g[d1] / g[d0]:+.2f}"
-                     if abs(g[d0]) > 1e-12 else "vertical")
+        ax.set_ylim(y_lo - y_pad, y_hi + y_pad)
+        ax.set_xlim(x_lo - x_pad, x_hi + x_pad)
+
+        # Title shows discovered vs expected slope
+        slope_str = (f"{slope:+.2f}" if np.isfinite(slope) else "vertical")
+        ref_str   = (f"{ref_slope:+.2f}" if np.isfinite(ref_slope) else "—")
         ax.set_xlabel(
             f"log₁₀({VARIABLE_NAMES[d0]})  [{VARIABLE_UNITS[d0]}]",
             fontsize=11,
@@ -499,8 +566,12 @@ def plot_results(X, y, results, output_dir):
             f"log₁₀({VARIABLE_NAMES[d1]})  [{VARIABLE_UNITS[d1]}]",
             fontsize=11,
         )
-        ax.set_title(f"Iso-invariant lines  ({slope_str})", fontsize=12)
-        ax.legend(fontsize=8, loc="best")
+        ax.set_title(
+            f"Iso-invariant lines   discovered slope = {slope_str}   "
+            f"(known Pi: {ref_str})",
+            fontsize=11,
+        )
+        ax.legend(fontsize=8, loc="best", framealpha=0.9)
     else:
         ax.text(0.5, 0.5, f"No scaling orbits\n(detected: {winner_type})",
                 ha="center", va="center", transform=ax.transAxes, fontsize=12)
@@ -529,6 +600,10 @@ def main():
                         help="Hidden layer widths for multi-layer encoder (e.g. --encoder-hidden 64 32)")
     parser.add_argument("--pi-basis", action="store_true",
                         help="Augment encoder input with known Pi group (LPBF normalised enthalpy)")
+    parser.add_argument("--log-normalize", action="store_true",
+                        help="Geometric-mean centre each column before scaling. This makes "
+                             "the scaling encoder's internal log(X) act as centred log-physical "
+                             "coordinates, so discovered slopes map 1:1 onto power-law exponents.")
     args = parser.parse_args()
 
     X, y, Pi = load_data(args)
