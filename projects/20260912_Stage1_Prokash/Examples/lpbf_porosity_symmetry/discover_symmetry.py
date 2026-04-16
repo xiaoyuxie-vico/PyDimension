@@ -286,6 +286,35 @@ def run_pipeline(X, y, Pi, args):
     print(f"  Generators: {len(generators)}")
     print()
 
+    # --- Report the winning encoder's weight vector ---
+    # The scaling encoder computes z = W · log(X.clamp(min=0.1)) with X the
+    # normalised (not augmented) input, so W has shape (n_latent, 7) and its
+    # columns correspond 1:1 to VARIABLE_NAMES.  Printing both the raw weights
+    # and their L2-normalised version lets the reader compare to the known
+    # Pi exponents [+1, +1, +1, +1, −2, +1, −2].
+    W = winner_encoder.weight_matrix  # (n_latent, n_inputs)
+    print("=" * 60)
+    print("  Winning encoder weight vector(s)")
+    print("=" * 60)
+    for i in range(W.shape[0]):
+        row = W[i]
+        denom = np.linalg.norm(row) + 1e-12
+        row_n = row / denom
+        print(f"  Row {i+1} (scaling):")
+        header = "    " + "  ".join(f"{n:>7s}" for n in VARIABLE_NAMES)
+        raw    = "    " + "  ".join(f"{v:+7.4f}" for v in row)
+        normed = "    " + "  ".join(f"{v:+7.4f}" for v in row_n)
+        print(header)
+        print(f"  raw :{raw}")
+        print(f"  L2-n:{normed}")
+        # Compare direction against known Pi exponents
+        ref = np.array([+1.0, +1.0, +1.0, +1.0, -2.0, +1.0, -2.0])
+        ref_n = ref / np.linalg.norm(ref)
+        cos = float(np.dot(row_n, ref_n))
+        print(f"  cos<row, known-Pi-exponents> = {cos:+.4f}  "
+              f"(±1 means perfect alignment)")
+    print()
+
     # --- Interpret generators physically ---
     print("=" * 60)
     print("Step 5: Physical interpretation of generators")
@@ -397,6 +426,17 @@ def plot_results(X, y, results, output_dir):
                 f"{loss:.4f}", ha="center", va="bottom", fontsize=9)
 
     # --- Panel 3: Generator orbits in log-space ---
+    #
+    # A scaling symmetry acts multiplicatively on X, equivalently additively
+    # on log(X).  Its orbits are therefore STRAIGHT LINES in log-log space,
+    # with slope s = g[d1] / g[d0] set by the null-space generator g.
+    #
+    # The earlier implementation traced the orbit in minmax-*normalised*
+    # coordinates and inverse-transformed back — because minmax is affine
+    # and not multiplicative, an exp(ε g) step in normalised space bends
+    # into a curve in log(X_raw).  Here we instead draw the iso-invariant
+    # lines directly in log10(X_raw), rooted at data points.  That is the
+    # honest geometric picture of the discovered scaling generator.
     ax = axes[2]
     if generators and winner_type == "scaling":
         g = generators[0]
@@ -404,31 +444,62 @@ def plot_results(X, y, results, output_dir):
         top2 = np.argsort(importance)[-2:][::-1]
         d0, d1 = top2[0], top2[1]
 
-        sc = ax.scatter(np.log10(X[:, d0] + 1e-12), np.log10(X[:, d1] + 1e-12),
-                        c=y, cmap="plasma", s=15, alpha=0.5, edgecolors="none")
+        # Scatter the data (log10 of raw physical X) coloured by pore fraction
+        logX0 = np.log10(np.maximum(X[:, d0], 1e-30))
+        logX1 = np.log10(np.maximum(X[:, d1], 1e-30))
+        sc = ax.scatter(logX0, logX1, c=y, cmap="plasma",
+                        s=18, alpha=0.75, edgecolors="none")
         fig.colorbar(sc, ax=ax, label="Pore fraction", fraction=0.046, pad=0.04)
+
+        # Slope in (log10 X[d0], log10 X[d1]) space from the generator:
+        # log(X_new) = log(X) + ε · g, so in log10 space the direction is g/ln(10).
+        # The line slope only needs the ratio g[d1] / g[d0].
+        x_lo, x_hi = logX0.min(), logX0.max()
+        x_pad = 0.1 * (x_hi - x_lo + 1e-9)
+        x_line = np.linspace(x_lo - x_pad, x_hi + x_pad, 2)
 
         orbit_colors = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3"]
         rng = np.random.default_rng(42)
-        start_indices = rng.choice(len(X), min(4, len(X)), replace=False)
+        # Pick starting points spread across the data, avoiding duplicates in
+        # the (d0, d1) plane (LPBF material-property columns take discrete values).
+        pts2d = np.column_stack([logX0, logX1])
+        uniq, uniq_idx = np.unique(np.round(pts2d, 4), axis=0, return_index=True)
+        start_indices = rng.choice(uniq_idx, min(4, len(uniq_idx)), replace=False)
 
-        for k, idx in enumerate(start_indices):
-            x_start = norm["X_normalized"][idx]
-            n_steps = 150
-            eps = 0.02
-            fwd = generator_orbit(x_start, g, n_steps, eps, winner_type)
-            back = generator_orbit(x_start, g, n_steps, -eps, winner_type)
-            orb = np.vstack([back[::-1], fwd[1:]])
-            orb_orig = norm["scaler_X"].inverse_transform(orb)
+        if abs(g[d0]) < 1e-12:
+            # Vertical iso-line: constant log(X[d0])
+            for k, idx in enumerate(start_indices):
+                ax.axvline(logX0[idx],
+                           color=orbit_colors[k % len(orbit_colors)],
+                           lw=2, alpha=0.85,
+                           label=f"orbit {k+1}" if k < 3 else None)
+        else:
+            slope = g[d1] / g[d0]
+            for k, idx in enumerate(start_indices):
+                y_line = logX1[idx] + slope * (x_line - logX0[idx])
+                ax.plot(x_line, y_line,
+                        color=orbit_colors[k % len(orbit_colors)],
+                        lw=2, alpha=0.85,
+                        label=f"orbit {k+1}" if k < 3 else None)
+            # Clip y-axis to the data range + a small pad so the lines don't
+            # wander off and hide the scatter.
+            y_lo, y_hi = logX1.min(), logX1.max()
+            y_pad = 0.15 * (y_hi - y_lo + 1e-9)
+            ax.set_ylim(y_lo - y_pad, y_hi + y_pad)
+            ax.set_xlim(x_lo - x_pad, x_hi + x_pad)
 
-            ax.plot(np.log10(np.abs(orb_orig[:, d0]) + 1e-12),
-                    np.log10(np.abs(orb_orig[:, d1]) + 1e-12),
-                    color=orbit_colors[k % len(orbit_colors)], lw=2, alpha=0.8,
-                    label=f"orbit {k+1}" if k < 3 else None)
-
-        ax.set_xlabel(f"log₁₀({VARIABLE_NAMES[d0]})", fontsize=11)
-        ax.set_ylabel(f"log₁₀({VARIABLE_NAMES[d1]})", fontsize=11)
-        ax.set_title("Generator Orbits (scaling directions)", fontsize=12)
+        # Annotate the generator direction in the panel title
+        slope_str = (f"slope = {g[d1] / g[d0]:+.2f}"
+                     if abs(g[d0]) > 1e-12 else "vertical")
+        ax.set_xlabel(
+            f"log₁₀({VARIABLE_NAMES[d0]})  [{VARIABLE_UNITS[d0]}]",
+            fontsize=11,
+        )
+        ax.set_ylabel(
+            f"log₁₀({VARIABLE_NAMES[d1]})  [{VARIABLE_UNITS[d1]}]",
+            fontsize=11,
+        )
+        ax.set_title(f"Iso-invariant lines  ({slope_str})", fontsize=12)
         ax.legend(fontsize=8, loc="best")
     else:
         ax.text(0.5, 0.5, f"No scaling orbits\n(detected: {winner_type})",
