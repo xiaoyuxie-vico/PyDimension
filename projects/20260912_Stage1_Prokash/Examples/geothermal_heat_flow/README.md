@@ -106,26 +106,28 @@ python discover_symmetry.py --data dataset_ghf.csv --fourier-basis
 
 ## Observed results
 
-Running with `--encoder-hidden 64 32 --log-normalize`:
+Results are stable across normalization strategies.  Two representative
+runs are shown below.
 
-### Step 2 — Latent dimension
+### Run 1: `--encoder-hidden 64 32 --log-normalize`
+
+#### Latent dimension
 
 ```
-k=1: R2_train=0.958, R2_test=0.956, MSE=0.0012
-k=2: R2_train=0.955, R2_test=0.950, MSE=0.0013
-k=3: R2_train=0.957, R2_test=0.957, MSE=0.0011
-k=4: R2_train=0.956, R2_test=0.948, MSE=0.0014
+k=1: R2_train=0.9577, R2_test=0.9560, MSE=0.001150
+k=2: R2_train=0.9569, R2_test=0.9489, MSE=0.001337
+k=3: R2_train=0.9517, R2_test=0.9539, MSE=0.001206
+k=4: R2_train=0.9504, R2_test=0.9521, MSE=0.001251
 ```
 
 `k* = 1` — heat flow is well described by a single latent coordinate.
-R²_test = 0.956 confirms excellent collapse.
 
-### Step 3 — Symmetry type
+#### Symmetry type
 
 ```
-scaling       : 0.0021  ← winner
+scaling       : 0.0022  ← winner
 translational : 0.0023
-rotational    : 0.0037
+rotational    : 0.0034
 Loss gap: 1.1×
 ```
 
@@ -133,52 +135,113 @@ Scaling wins.  The gap is modest (1.1×) because the dataset has only
 4 input variables (vs 7 in LPBF), so the translational encoder can
 also find a reasonable fit.
 
-### Step 4 — Encoder weight vector
+#### Encoder weight vector
 
 ```
           k        G        z        d
-L2-n: +0.389   +0.919   +0.042   -0.055
+L2-n: -0.426   -0.902   -0.048   +0.052
 known: +0.707   +0.707   +0.000   +0.000
 ```
 
-`cos(learned, known) = +0.925` — strong alignment with Fourier's law.
+`cos(learned, known) = −0.939` — strong alignment with Fourier's law
+(sign is arbitrary; |cos| = 0.939).
+
+#### Generators
+
+```
+Generator 1: k × exp(−0.902ε), G × exp(+0.429ε)
+  → decrease k while increase G  (Fourier k·G = const trade-off)
+Generator 2: z × exp(+0.999ε)
+  → z is completely free
+Generator 3: d × exp(+0.998ε)
+  → d is completely free
+```
+
+### Run 2: `--encoder-hidden 64 32` (no log-normalize)
+
+#### Latent dimension
+
+```
+k=1: R2_train=0.9577, R2_test=0.9560, MSE=0.001150
+k=2: R2_train=0.9569, R2_test=0.9489, MSE=0.001337
+k=3: R2_train=0.9517, R2_test=0.9539, MSE=0.001206
+k=4: R2_train=0.9504, R2_test=0.9521, MSE=0.001251
+```
+
+`k* = 1` — identical to Run 1.
+
+#### Symmetry type
+
+```
+scaling       : 0.0021  ← winner
+translational : 0.0023
+rotational    : 0.0035
+Loss gap: 1.1×
+```
+
+#### Encoder weight vector
+
+```
+          k        G        z        d
+L2-n: +0.424   +0.903   +0.035   -0.052
+known: +0.707   +0.707   +0.000   +0.000
+```
+
+`cos(learned, known) = +0.939` — identical alignment to Run 1.
+
+#### Generators
+
+```
+Generator 1: k × exp(−0.903ε), G × exp(+0.427ε)
+  → decrease k while increase G  (Fourier k·G = const trade-off)
+Generator 2: z × exp(+0.999ε)
+  → z is completely free
+Generator 3: d × exp(+0.998ε), k × exp(+0.052ε)
+  → d is completely free
+```
+
+### Exponent recovery
 
 | Variable | Learned sign | Known sign | Weight | Match? |
 |----------|-------------|------------|--------|--------|
-| k        | +           | +          | 0.389  | ✓      |
-| G        | +           | +          | 0.919  | ✓      |
-| z        | ≈ 0         | 0          | 0.042  | ✓      |
-| d        | ≈ 0         | 0          | 0.055  | ✓      |
+| k        | +           | +          | 0.424  | ✓      |
+| G        | +           | +          | 0.903  | ✓      |
+| z        | ≈ 0         | 0          | 0.035  | ✓      |
+| d        | ≈ 0         | 0          | 0.052  | ✓      |
 
 All four exponents are correctly recovered.  The slight asymmetry
-between k and G weights (0.39 vs 0.92 instead of equal) reflects
+between k and G weights (0.42 vs 0.90 instead of equal) reflects
 the data's dynamic range: G spans two orders of magnitude
 (1–360 °C/km) while k spans less than one (0.6–3.5 W/(m·K)).
 
-### Step 5 — Generators
+### Panel 3 — Iso-invariant slopes
 
-The 3 null-space generators split cleanly:
+```
+Discovered (null-space generator):  −0.48
+Encoder restricted (−W[k]/W[G]):    −0.47
+Known Fourier (−e_k/e_G = −1/1):   −1.00
+```
 
-**Constrained direction** (physically meaningful):
-- Generator 1: decrease k, increase G → the `k·G = const` trade-off
-  (Fourier's law)
-
-**Free directions** (irrelevant to heat flow):
-- Generator 2: z is completely free (weight ≈ 0)
-- Generator 3: d is completely free (weight ≈ 0)
+The discovered slope is shallower than −1 because the encoder
+over-weights G relative to k, driven by G's wider dynamic range.
+The restricted and null-space slopes are nearly identical (−0.47
+vs −0.48), confirming that z and d contribute negligibly.
 
 ### Summary
 
 | Aspect | Result |
 |--------|--------|
-| Symmetry type | Scaling ✓ |
+| Symmetry type | Scaling ✓ (stable across runs) |
 | Latent dimension | k* = 1 ✓ |
 | k, G exponents | Correctly recovered ✓ |
 | z, d exponents | Correctly identified as irrelevant ✓ |
-| cos(learned, Fourier) | 0.925 |
+| cos(learned, Fourier) | 0.939 (stable) |
 | Test R² | 0.956 |
 
 The pipeline discovers that geothermal heat flow obeys a scaling
 symmetry, recovers Fourier's law Q = k·G from data alone, and
 correctly identifies probe depth and water depth as physically
-irrelevant variables.
+irrelevant variables.  Unlike the LPBF example (cos = 0.49, limited
+by 5 confounded alloys), the geothermal example achieves near-perfect
+alignment (cos = 0.94) because all variables have sufficient
+independent variation in the 210-measurement dataset.
